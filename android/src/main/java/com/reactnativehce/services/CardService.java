@@ -1,4 +1,4 @@
-package com.reactnativehce;
+package com.reactnativehce.services;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -6,8 +6,8 @@ import android.nfc.cardemulation.HostApduService;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.reactnativehce.apps.HCEApplication;
-import com.reactnativehce.apps.nfc.NFCTag;
+import com.reactnativehce.IHCEApplication;
+import com.reactnativehce.apps.nfc.NFCTagType4;
 import com.reactnativehce.utils.BinaryUtils;
 
 import java.util.ArrayList;
@@ -19,8 +19,8 @@ public class CardService extends HostApduService {
     private static final byte[] CMD_OK = BinaryUtils.HexStringToByteArray("9000");
     private static final byte[] CMD_ERROR = BinaryUtils.HexStringToByteArray("6A82");
 
-    private ArrayList<HCEApplication> registeredHCEApplications = new ArrayList<HCEApplication>();
-    private HCEApplication currentHCEApplication = null;
+    private ArrayList<IHCEApplication> registeredHCEApplications = new ArrayList<IHCEApplication>();
+    private IHCEApplication currentHCEApplication = null;
 
     @Override
     public byte[] processCommandApdu(byte[] commandApdu, Bundle extras) {
@@ -31,7 +31,7 @@ public class CardService extends HostApduService {
       byte[] header = Arrays.copyOfRange(commandApdu, 0, 4);
 
       if (Arrays.equals(SELECT_APDU_HEADER, header)) {
-        for (HCEApplication app : registeredHCEApplications) {
+        for (IHCEApplication app : registeredHCEApplications) {
           if (app.assertSelectCommand(commandApdu)) {
             currentHCEApplication = app;
             return CMD_OK;
@@ -52,7 +52,7 @@ public class CardService extends HostApduService {
       String type = prefs.getString("type", "text");
       String content = prefs.getString("content", "No text provided");
 
-      registeredHCEApplications.add(new NFCTag(type, content));
+      registeredHCEApplications.add(new NFCTagType4(type, content));
     }
 
     @Override

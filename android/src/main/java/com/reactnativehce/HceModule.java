@@ -2,7 +2,6 @@ package com.reactnativehce;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
@@ -10,8 +9,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
-
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import com.reactnativehce.services.CardService;
 
 public class HceModule extends ReactContextBaseJavaModule {
   private static ReactApplicationContext reactContext;

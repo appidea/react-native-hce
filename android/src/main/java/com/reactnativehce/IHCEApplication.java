@@ -1,6 +1,6 @@
-package com.reactnativehce.apps;
+package com.reactnativehce;
 
-public interface HCEApplication {
+public interface IHCEApplication {
   byte[] processCommand(byte[] command);
   boolean assertSelectCommand(byte[] command);
 }

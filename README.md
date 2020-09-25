@@ -9,7 +9,10 @@ For now, the only out-of-the-box solution provided by this package is:
 
 anyways, the module's architecture is ready to engage also the other usages.
 
-**The package currenlty is supported only by the Android platform, as Apple devices currently does not provide API nor hardware support for the HCE.**
+## Important notes
+
+- The package currenlty is supported **only on the Android platform**, as Apple devices currently does not provide API nor hardware support for the HCE.
+- Compatibility note: **HCE has been introduced with Android v4.4**, so app will be working correctly only when SDK version >= 19
 
 ## Installation
 

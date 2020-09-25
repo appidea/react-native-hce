@@ -3,11 +3,11 @@ package com.reactnativehce.apps.nfc;
 import android.util.Log;
 
 import com.reactnativehce.utils.BinaryUtils;
-import com.reactnativehce.apps.HCEApplication;
+import com.reactnativehce.IHCEApplication;
 
 import java.util.Arrays;
 
-public class NFCTag implements HCEApplication {
+public class NFCTagType4 implements IHCEApplication {
   private static final String TAG = "NFCTag";
 
   private static final byte[] CMD_CAPABILITY_CONTAINER_OK = BinaryUtils.HexStringToByteArray("00A4000C02E103");
@@ -21,7 +21,7 @@ public class NFCTag implements HCEApplication {
 
   private NdefEntity ndefEntity;
 
-  public NFCTag(String type, String content) {
+  public NFCTagType4(String type, String content) {
     ndefEntity = new NdefEntity(type, content);
   }
 

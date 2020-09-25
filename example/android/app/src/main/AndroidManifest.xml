@@ -31,7 +31,7 @@
 
     <!-- add this -->
     <service
-        android:name="com.reactnativehce.CardService"
+        android:name="com.reactnativehce.services.CardService"
         android:exported="true"
         android:enabled="false"
         android:permission="android.permission.BIND_NFC_SERVICE" >
