@@ -1,11 +1,15 @@
 # react-native-hce
 
-Use the NFC HCE features in Your react-native application:
+**Host Card Emulation** is the technology in Android Devices, that let the device act as a host in the NFC communication. This technology can be used, e.g. to simulate the passive smart cards or NFC tags.
+This package allows the ``react-native`` application to use the adventages of this technology.
 
-- NFC Tag v4 emulation
+For now, the only out-of-the-box solution provided by this package is:
 
-The package currenlty is supported only by the Android platform, as Apple devices currently does not provide API nor hardware support for the
-HCE.
+- NFC Type 4 tag emulation
+
+anyways, the module's architecture is ready to engage also the other usages.
+
+**The package currenlty is supported only by the Android platform, as Apple devices currently does not provide API nor hardware support for the HCE.**
 
 ## Installation
 
@@ -19,7 +23,9 @@ or
 yarn add react-native-hce
 ```
 
-Up to Your preferences and project configuration.
+...up to Your preferences and project configuration.
+
+Autolinking should tak care about the rest (the extension has been tested at least on the ``react-native@0.62.2``)
 
 
 ## Post-installation steps
@@ -46,6 +52,8 @@ Create new file `aid_list.xml` in `<projectRoot>/android/app/src/main/java/res/x
 ```
 
 ### AndroidManifest.xml
+
+Open the app's manifest (``<projectRoot>/android/app/src/main/AndroidManifest.xml``):
 
 - Add permission to use NFC in the application, and add the declaration of usage the HCE feature:
 
@@ -96,11 +104,13 @@ That's it.
 
 ## Usage
 
-### NFC v4 Tag emulation feature
+You can clone the repository and try out the [example react-native app](example), that implements this module.
 
-Inspired by [underwindfall's](https://github.com/underwindfall) NFC Tag v4 communication handling used in [NFCAndroid](https://github.com/underwindfall/NFCAndroid).
+### NFC Type 4 tag emulation feature
 
-**Note! If You want to use this feature, make sure that You added the proper aid to Your aid_list.xml. Otherwise, the app will not handle any signal of NFC reader related with NFC Tags v4.**
+Inspired by [underwindfall's](https://github.com/underwindfall) NFC Type 4 tag communication handling used in [NFCAndroid](https://github.com/underwindfall/NFCAndroid).
+
+**Note! If You want to use this feature, make sure that You added the proper aid to Your ``aid_list.xml``. Otherwise, the app will not handle any signal of NFC reader related with NFC Tags v4.**
 
 This is how to enable the NFC Tag emulation:
 
@@ -114,6 +124,8 @@ const startSimulation = async () => {
   simulation = new HCESimulation(nfcTag);
   await simulation.start();
 }
+
+startSimulation();
 ```
 
 stops this way:
@@ -122,21 +134,25 @@ stops this way:
 const stopSimulation = async () => {
   await simulation.terminate();
 }
+
+stopSimulation();
 ```
 
 See [example](example/src/App.tsx) of the module integrated into the React Native component.
 
 ### Other features
 
-Currently, there is no support for other applications than NFC Tag v4.
+Currently, there is no support for other applications than NFC Type 4 tag.
 
-You can contribute to the library and add the other functionalities, if You eager. Looking forward to Your pull requests.
+You can contribute to the library and add the other functionalities, if You eager.
 
 ## Development roadmap
 
 If there will be more application handled in future, the next step is to tansform this package into separate packages handled by Lerna monorepo.
 
 ## Contributing
+
+This project has been bootstrapped with [Bob](https://github.com/react-native-community/bob.git).
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
 
