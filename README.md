@@ -124,7 +124,7 @@ const stopSimulation = async () => {
 }
 ```
 
-See [example](example) of the module integrated into the React Native component.
+See [example](example/src/App.tsx) of the module integrated into the React Native component.
 
 ### Other features
 
