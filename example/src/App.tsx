@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import HCESimulation, { NFCContentType, NFCTag } from 'react-native-hce';
+import HCESession, { NFCContentType, NFCTagType4 } from 'react-native-hce';
 
 export default function App() {
   const [content, setContent] = useState<string>('');
@@ -8,7 +8,7 @@ export default function App() {
     NFCContentType.Text
   );
 
-  const simulationInstance = useRef<HCESimulation | undefined>();
+  const simulationInstance = useRef<HCESession | undefined>();
   const [simulationEnabled, setSimulationEnabled] = useState<boolean>(false);
 
   const terminateSimulation = useCallback(async () => {
@@ -23,9 +23,8 @@ export default function App() {
   }, [setSimulationEnabled, simulationInstance]);
 
   const startSimulation = useCallback(async () => {
-    const tag = new NFCTag(contentType, content);
-    console.log(contentType, content);
-    simulationInstance.current = await new HCESimulation(tag).start();
+    const tag = new NFCTagType4(contentType, content);
+    simulationInstance.current = await new HCESession(tag).start();
     setSimulationEnabled(simulationInstance.current.active);
   }, [setSimulationEnabled, simulationInstance, content, contentType]);
 

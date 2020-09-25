@@ -45,7 +45,7 @@ Create new file `aid_list.xml` in `<projectRoot>/android/app/src/main/java/res/x
   <aid-group android:category="other"
              android:description="@string/app_name">
     <!-- Create a separate <aid-filer /> node for each NFC application ID, that You intent to emulate/host. -->
-    <!-- For the NFC tag v4 emulation, let's put "D2760000850101" -->
+    <!-- For the NFC Type 4 tag emulation, let's put "D2760000850101" -->
     <aid-filter android:name="D2760000850101" />
   </aid-group>
 </host-apdu-service>
@@ -115,14 +115,13 @@ Inspired by [underwindfall's](https://github.com/underwindfall) NFC Type 4 tag c
 This is how to enable the NFC Tag emulation:
 
 ```js
-import HCESimulation, { NFCContentType, NFCTag } from 'react-native-hce';
+import HCESession, { NFCContentType, NFCTagType4 } from 'react-native-hce';
 
 let simulation;
 
 const startSimulation = async () => {
-  const nfcTag = new NFCTag(NFCContentType.Text, "Foo bar.");
-  simulation = new HCESimulation(nfcTag);
-  await simulation.start();
+    const tag = new NFCTagType4(NFCContentType.Text, "Hello world");
+    simulation = await (new HCESession(tag)).start();
 }
 
 startSimulation();
@@ -141,8 +140,6 @@ stopSimulation();
 See [example](example/src/App.tsx) of the module integrated into the React Native component.
 
 ### Other features
-
-Currently, there is no support for other applications than NFC Type 4 tag.
 
 You can contribute to the library and add the other functionalities, if You eager.
 
