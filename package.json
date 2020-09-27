@@ -1,6 +1,6 @@
 {
   "name": "react-native-hce",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Emulate smart cards inside React-Native application.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
