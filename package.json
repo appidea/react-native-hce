@@ -1,7 +1,7 @@
 {
   "name": "react-native-hce",
   "version": "0.1.1",
-  "description": "Use the NFC HCE possibilities in Your react-native application!",
+  "description": "Emulate smart cards inside React-Native application.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/src/index.d.ts",
@@ -31,8 +31,10 @@
   },
   "keywords": [
     "react-native",
-    "ios",
-    "android"
+    "android",
+    "smartcard",
+    "nfc",
+    "hce"
   ],
   "repository": "https://github.com/appidea/react-native-hce",
   "author": "Mateusz Falkowski <mateusz@appidea.pl> (http://www.appidea.pl)",
