@@ -37,7 +37,7 @@ After the installation, following changes must be made inside the  ``<projectRoo
 
 ### aid_list.xml
 
-Create new file `aid_list.xml` in `<projectRoot>/android/app/src/main/java/res/xml` directory. Create the directory, if it does not exist yet.
+Create new file `aid_list.xml` in `<projectRoot>/android/app/src/main/res/xml` directory. Create the directory, if it does not exist yet.
 
 - Put the following content to the file:
 
@@ -86,7 +86,7 @@ Open the app's manifest (``<projectRoot>/android/app/src/main/AndroidManifest.xm
 
     <!-- Add the following block: -->
     <service
-        android:name="com.reactnativehce.CardService"
+        android:name="com.reactnativehce.services.CardService"
         android:exported="true"
         android:enabled="false"
         android:permission="android.permission.BIND_NFC_SERVICE" >
