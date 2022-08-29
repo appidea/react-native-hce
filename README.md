@@ -170,11 +170,18 @@ See [example](example/src/App.tsx) of the module integrated into the React Nativ
 
 ### Other features
 
-You can contribute to the library and add the other functionalities, if You eager.
+This project is opened for Your ideas. You can contribute to the library and add the other functionalities, if You eager.
+
+### Troubleshooting
+
+- Ensure, that there is no AID conflict with other HCE-enabled apps. Try to disable all HCE-enabled apps except the Your one. You can do this in Android Settings. [See more details...](https://github.com/appidea/react-native-hce/issues/2#issuecomment-1221538916)
+- If You experience the issues when trying to start up the example application, ensure, that You follow the steps described in [contribution guide](CONTRIBUTING.md).
 
 ## Development roadmap
 
-If there will be more application handled in future, the next step is to tansform this package into separate packages handled by Lerna monorepo.
+- support for more types of NDEF Messages
+- support for writable NFC Tags
+- support for development of custom applications
 
 ## Contributing
 
