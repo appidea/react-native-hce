@@ -4,38 +4,41 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Handler;
-import android.os.Looper;
-import androidx.annotation.Nullable;
-import androidx.lifecycle.Observer;
+import android.util.Log;
+
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.reactnativehce.services.CardService;
 
 public class HceModule extends ReactContextBaseJavaModule {
   private static ReactApplicationContext reactContext;
-  private HceAndroidViewModel model;
-
-  final Observer<String> observer = new Observer<String>() {
-    @Override
-    public void onChanged(@Nullable final String lastState) {
-      reactContext
-        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit("hceState", lastState);
-    }
-  };
+  private final EventManager listenerFactory;
 
   HceModule(ReactApplicationContext context) {
     super(context);
     reactContext = context;
+    listenerFactory = EventManager.getInstance(context);
   }
 
   @Override
   public String getName() {
     return "Hce";
+  }
+
+  @ReactMethod
+  public void addListener(String eventName) throws Exception {
+    if (!eventName.equals(EventManager.EVENT_STATE)) {
+      throw new Exception("Event not supported: " + eventName);
+    }
+
+    this.listenerFactory.addListener(EventManager.EVENT_STATE);
+  }
+
+  @ReactMethod
+  public void removeListeners(Integer count) {
+    this.listenerFactory.clear();
   }
 
   @ReactMethod
@@ -59,15 +62,6 @@ public class HceModule extends ReactContextBaseJavaModule {
         enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
         PackageManager.DONT_KILL_APP
       );
-
-    if (enabled) {
-      this.model = HceAndroidViewModel.getInstance(this.getReactApplicationContext().getApplicationContext());
-      new Handler(Looper.getMainLooper())
-        .post(() -> this.model.getLastState().observeForever(observer));
-    } else {
-      new Handler(Looper.getMainLooper())
-        .post(() -> this.model.getLastState().removeObserver(observer));
-    }
 
     promise.resolve(enabled);
   }
