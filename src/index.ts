@@ -1,8 +1,9 @@
 import type HCEApplication from "./HCEApplication";
-import { NativeModules, Platform } from 'react-native';
+import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import NFCTagType4, { NFCContentType } from './NFCTagType4';
 
 const { Hce } = NativeModules;
+const eventEmitter = new NativeEventEmitter(Hce);
 
 class HCESession {
   /**
@@ -44,6 +45,12 @@ class HCESession {
 
     throw new Error('Unrecognized app type.');
   };
+
+  addListener = (eventName: string, callback: (eventData: void) => void) => {
+    return eventEmitter.addListener(eventName, (eventProp) => {
+      callback(eventProp);
+    });
+  }
 
   application: any;
 

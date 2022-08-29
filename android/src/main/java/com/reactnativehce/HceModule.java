@@ -4,18 +4,29 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-
+import android.os.Handler;
+import android.os.Looper;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.Observer;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.reactnativehce.services.CardService;
 
 public class HceModule extends ReactContextBaseJavaModule {
   private static ReactApplicationContext reactContext;
+  private HceAndroidViewModel model;
 
-  private static final String DURATION_SHORT_KEY = "SHORT";
-  private static final String DURATION_LONG_KEY = "LONG";
+  final Observer<String> observer = new Observer<String>() {
+    @Override
+    public void onChanged(@Nullable final String lastState) {
+      reactContext
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("hceState", lastState);
+    }
+  };
 
   HceModule(ReactApplicationContext context) {
     super(context);
@@ -48,6 +59,15 @@ public class HceModule extends ReactContextBaseJavaModule {
         enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
         PackageManager.DONT_KILL_APP
       );
+
+    if (enabled) {
+      this.model = HceAndroidViewModel.getInstance(this.getReactApplicationContext().getApplicationContext());
+      new Handler(Looper.getMainLooper())
+        .post(() -> this.model.getLastState().observeForever(observer));
+    } else {
+      new Handler(Looper.getMainLooper())
+        .post(() -> this.model.getLastState().removeObserver(observer));
+    }
 
     promise.resolve(enabled);
   }

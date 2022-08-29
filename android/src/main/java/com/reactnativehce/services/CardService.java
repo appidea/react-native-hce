@@ -5,11 +5,10 @@ import android.content.SharedPreferences;
 import android.nfc.cardemulation.HostApduService;
 import android.os.Bundle;
 import android.util.Log;
-
+import com.reactnativehce.HceAndroidViewModel;
 import com.reactnativehce.IHCEApplication;
 import com.reactnativehce.apps.nfc.NFCTagType4;
 import com.reactnativehce.utils.BinaryUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -21,6 +20,7 @@ public class CardService extends HostApduService {
 
     private ArrayList<IHCEApplication> registeredHCEApplications = new ArrayList<IHCEApplication>();
     private IHCEApplication currentHCEApplication = null;
+    private HceAndroidViewModel model = null;
 
     @Override
     public byte[] processCommandApdu(byte[] commandApdu, Bundle extras) {
@@ -34,6 +34,7 @@ public class CardService extends HostApduService {
         for (IHCEApplication app : registeredHCEApplications) {
           if (app.assertSelectCommand(commandApdu)) {
             currentHCEApplication = app;
+            this.model.getLastState().setValue("NFC");
             return CMD_OK;
           }
         }
@@ -52,11 +53,15 @@ public class CardService extends HostApduService {
       String type = prefs.getString("type", "text");
       String content = prefs.getString("content", "No text provided");
 
+      this.model = HceAndroidViewModel.getInstance(this.getApplicationContext());
+      this.model.getLastState().setValue("CONNECTED");
+
       registeredHCEApplications.add(new NFCTagType4(type, content));
     }
 
     @Override
     public void onDeactivated(int reason) {
+      this.model.getLastState().setValue("DISCONNECTED");
       Log.d(TAG, "Finishing service: " + reason);
     }
 }
