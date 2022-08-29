@@ -1,15 +1,23 @@
 import React, { useCallback, useState, useRef } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Button,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TextStyle,
+  View,
+  ViewStyle,
+} from 'react-native';
 import HCESession, { NFCContentType, NFCTagType4 } from 'react-native-hce';
 
-export default function App() {
+const App: React.FC = (): JSX.Element => {
   const [content, setContent] = useState<string>('');
-  const [contentType, setContentType] = useState<NFCContentType>(
-    NFCContentType.Text
-  );
-
+  const [contentType, setContentType] = useState<NFCContentType>(NFCContentType.Text);
   const simulationInstance = useRef<HCESession | undefined>();
   const [simulationEnabled, setSimulationEnabled] = useState<boolean>(false);
+  const [logMsg, setLogMsg] = useState<Array<any>>([]);
+  const listener = useRef<any>(null);
 
   const terminateSimulation = useCallback(async () => {
     const instance = simulationInstance.current;
@@ -20,18 +28,25 @@ export default function App() {
 
     await instance.terminate();
     setSimulationEnabled(instance.active);
-  }, [setSimulationEnabled, simulationInstance]);
+    listener.current?.remove();
+  }, [setSimulationEnabled, simulationInstance, listener]);
 
   const startSimulation = useCallback(async () => {
     const tag = new NFCTagType4(contentType, content);
     simulationInstance.current = await new HCESession(tag).start();
     setSimulationEnabled(simulationInstance.current.active);
-  }, [setSimulationEnabled, simulationInstance, content, contentType]);
+
+    listener.current = simulationInstance.current.addListener('hceState', (eventData) => {
+      setLogMsg(msg => ([...msg, {
+        time: (new Date()).toISOString(),
+        message: eventData
+      }]));
+    });
+  }, [setSimulationEnabled, simulationInstance, content, contentType, listener, setLogMsg]);
 
   const selectNFCType = useCallback(
     (type) => {
       setContentType(type);
-      console.log(type);
       void terminateSimulation();
     },
     [setContentType, terminateSimulation]
@@ -82,14 +97,57 @@ export default function App() {
           />
         )}
       </View>
+
+      <View style={styles.log}>
+        <View style={styles.logTitle}>
+          <Text style={styles.logTitleText}>Event Log</Text>
+        </View>
+
+        <ScrollView style={styles.logContent}>
+          <View style={styles.logContentInner}>
+            {logMsg.map((line, key) => (
+              <Text key={key}>{line.time + ' ' + line.message}</Text>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+export default App;
+
+interface Styles {
+  container: ViewStyle;
+  log: ViewStyle;
+  logTitle: ViewStyle;
+  logTitleText: TextStyle;
+  logContent: ViewStyle;
+  logContentInner: ViewStyle
+}
+
+const styles = StyleSheet.create<Styles>({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  log: {
+    width: '100%',
+    borderWidth: 1,
+    marginTop: 20
+  },
+  logTitle: {
+    backgroundColor: '#000'
+  },
+  logTitleText: {
+    color: '#FFF',
+    padding: 8
+  },
+  logContent: {
+    height: 200
+  },
+  logContentInner: {
+    padding: 8,
+  }
 });

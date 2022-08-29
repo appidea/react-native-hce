@@ -140,6 +140,32 @@ const stopSimulation = async () => {
 stopSimulation();
 ```
 
+It is possible to listen for events during the simulation:
+
+```js
+const listen = async () => {
+  const listener = simulation.addListener('hceStatus', (currentStatus) => {
+    switch (currentStatus) {
+      case "CONNECTED":
+        // HCE transmission has been routed to the application.
+        // It means, user tapped the phone to the reader, and reader have sent matching Select Application command.
+        break;
+      case "NFC":
+        // NFC Tag application has been selected.
+        break;
+      case "DISCONNECTED":
+        // HCE transmission has been terminated
+        break;
+    }
+  });
+
+  // to remove the listener:
+  listener.remove();
+}
+
+listen();
+```
+
 See [example](example/src/App.tsx) of the module integrated into the React Native component.
 
 ### Other features
