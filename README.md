@@ -1,4 +1,11 @@
-# react-native-hce
+<p align="center">
+  <img src="logo.png" alt="React Native HCE">
+</p>
+<p align="center">
+  Host card emulation (HCE) in React Native.<br/>
+</p>
+
+---
 
 **Host Card Emulation** is the technology in Android Devices, that let the device act as a host in the NFC communication. This technology can be used, e.g. to simulate the passive smart cards or NFC tags.
 This package allows the ``react-native`` application to use the adventages of this technology.
