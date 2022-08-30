@@ -52,11 +52,12 @@ public class CardService extends HostApduService {
 
       String type = prefs.getString("type", "text");
       String content = prefs.getString("content", "No text provided");
+      Boolean writable = prefs.getBoolean("writable", false);
 
       this.model = HceAndroidViewModel.getInstance(this.getApplicationContext());
       this.model.getLastState().setValue("CONNECTED");
 
-      registeredHCEApplications.add(new NFCTagType4(type, content));
+      registeredHCEApplications.add(new NFCTagType4(type, content, writable));
     }
 
     @Override

@@ -2,7 +2,7 @@ import React, { useCallback, useState, useRef } from 'react';
 import {
   Button,
   ScrollView,
-  StyleSheet,
+  StyleSheet, Switch,
   Text,
   TextInput,
   TextStyle,
@@ -14,6 +14,7 @@ import HCESession, { NFCContentType, NFCTagType4 } from 'react-native-hce';
 const App: React.FC = (): JSX.Element => {
   const [content, setContent] = useState<string>('');
   const [contentType, setContentType] = useState<NFCContentType>(NFCContentType.Text);
+  const [contentWritable, setContentWritable] = useState<boolean>(false);
   const simulationInstance = useRef<HCESession | undefined>();
   const [simulationEnabled, setSimulationEnabled] = useState<boolean>(false);
   const [logMsg, setLogMsg] = useState<Array<any>>([]);
@@ -32,7 +33,7 @@ const App: React.FC = (): JSX.Element => {
   }, [setSimulationEnabled, simulationInstance, listener]);
 
   const startSimulation = useCallback(async () => {
-    const tag = new NFCTagType4(contentType, content);
+    const tag = new NFCTagType4(contentType, content, contentWritable);
     simulationInstance.current = await new HCESession(tag).start();
     setSimulationEnabled(simulationInstance.current.active);
 
@@ -42,7 +43,7 @@ const App: React.FC = (): JSX.Element => {
         message: eventData
       }]));
     });
-  }, [setSimulationEnabled, simulationInstance, content, contentType, listener, setLogMsg]);
+  }, [setSimulationEnabled, simulationInstance, content, contentWritable, contentType, listener, setLogMsg]);
 
   const selectNFCType = useCallback(
     (type) => {
@@ -58,6 +59,14 @@ const App: React.FC = (): JSX.Element => {
       void terminateSimulation();
     },
     [setContent, terminateSimulation]
+  );
+
+  const toggleNFCWritable = useCallback(
+    () => {
+      setContentWritable(state => !state);
+      void terminateSimulation();
+    },
+    [setContentWritable, terminateSimulation]
   );
 
   return (
@@ -83,6 +92,11 @@ const App: React.FC = (): JSX.Element => {
         value={content}
         placeholder="Enter the content here."
       />
+
+      <View>
+        <Switch onChange={() => toggleNFCWritable()} value={contentWritable} />
+        <Text>Is tag writable?</Text>
+      </View>
 
       <View style={{ flexDirection: 'row' }}>
         {!simulationEnabled ? (

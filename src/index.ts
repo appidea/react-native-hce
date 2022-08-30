@@ -34,7 +34,8 @@ class HCESession {
     if (this.application instanceof NFCTagType4) {
       await Hce.setContent(
         this.application.content.contentType,
-        this.application.content.content
+        this.application.content.content,
+        this.application.content.writable
       );
 
       await Hce.setEnabled(true);

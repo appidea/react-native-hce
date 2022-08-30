@@ -11,11 +11,12 @@ class NFCTagType4 implements HCEApplication {
    * @param contentType The NDEF type: text or url. Use the values from NFCContentType
    * @param content The actual content of NDEF message.
    */
-  constructor(contentType: NFCContentType, content: string) {
+  constructor(contentType: NFCContentType, content: string, writable: boolean) {
     this.type = 'NFCTag';
     this.content = {
       contentType,
       content,
+      writable
     };
   }
 

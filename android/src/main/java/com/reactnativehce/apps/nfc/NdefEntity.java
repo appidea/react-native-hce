@@ -16,9 +16,9 @@ public class NdefEntity {
     NdefRecord record;
 
     if (type.equals("text")) {
-      record = createTextRecord("en", content);
+      record = NdefRecord.createTextRecord("en", content);
     } else if (type.equals("url")) {
-      record = createUrlRecord(content);
+      record = NdefRecord.createUri(content);
     } else {
       throw new IllegalArgumentException("Wrong NFC tag content type");
     }
@@ -40,39 +40,5 @@ public class NdefEntity {
     System.arraycopy(start, 0, filledArray, 0, start.length);
     System.arraycopy(array, 0, filledArray, start.length, array.length);
     return fillByteArrayToFixedDimension(filledArray, fixedSize);
-  }
-
-  public static NdefRecord createTextRecord(String language, String text) {
-    byte[] languageBytes;
-    byte[] textBytes;
-
-    languageBytes = language.getBytes(Charset.forName("US-ASCII"));
-    textBytes = text.getBytes(Charset.forName("UTF-8"));
-
-    byte[] recordPayload = new byte[1 + (languageBytes.length & 0x03F) + textBytes.length];
-
-    Integer zeroVal = languageBytes.length & 0x03F;
-    recordPayload[0] = zeroVal.byteValue();
-
-    System.arraycopy(languageBytes, 0, recordPayload, 1, languageBytes.length & 0x03F);
-    System.arraycopy(textBytes, 0, recordPayload,1 + (languageBytes.length & 0x03F), textBytes.length);
-
-    Log.i(TAG, BinaryUtils.ByteArrayToHexString(recordPayload));
-
-    return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, null, recordPayload);
-  }
-
-  public static NdefRecord createUrlRecord(String text) {
-    byte[] textBytes;
-
-    textBytes = text.getBytes(Charset.forName("UTF-8"));
-
-    byte[] recordPayload = new byte[1 + textBytes.length];
-
-    System.arraycopy(textBytes,0, recordPayload,1, textBytes.length);
-
-    Log.i(TAG, BinaryUtils.ByteArrayToHexString(recordPayload));
-
-    return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_URI, null, recordPayload);
   }
 }

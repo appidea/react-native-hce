@@ -10,7 +10,10 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReadableMap;
 import com.reactnativehce.services.CardService;
+
+import java.util.HashMap;
 
 public class HceModule extends ReactContextBaseJavaModule {
   private static ReactApplicationContext reactContext;
@@ -42,12 +45,13 @@ public class HceModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void setContent(String type, String content, Promise promise) {
+  public void setContent(String type, String content, Boolean writable, Promise promise) {
     SharedPreferences.Editor editor = reactContext.getApplicationContext().getSharedPreferences("hce", Context.MODE_PRIVATE)
       .edit();
 
     editor.putString("type", type);
     editor.putString("content", content);
+    editor.putBoolean("writable", writable);
 
     editor.apply();
 

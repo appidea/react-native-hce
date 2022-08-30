@@ -10,80 +10,114 @@ import java.util.Arrays;
 public class NFCTagType4 implements IHCEApplication {
   private static final String TAG = "NFCTag";
 
-  private static final byte[] CMD_CAPABILITY_CONTAINER_OK = BinaryUtils.HexStringToByteArray("00A4000C02E103");
-  private static final byte[] CMD_READ_CAPABILITY_CONTAINER = BinaryUtils.HexStringToByteArray("00B000000F");
-  private static final byte[] CMD_READ_CAPABILITY_CONTAINER_RESPONSE = BinaryUtils.HexStringToByteArray("001120FFFFFFFF0406E104FFFE00FF9000");
-  private static final byte[] CMD_NDEF_SELECT_OK = BinaryUtils.HexStringToByteArray("00A4000C02E104");
-  private static final byte[] CMD_NDEF_READ_BINARY_NLEN = BinaryUtils.HexStringToByteArray("00B0000002");
-  private static final byte[] CMD_NDEF_READ_BINARY = BinaryUtils.HexStringToByteArray("00B0");
-  private static final byte[] CMD_OK = BinaryUtils.HexStringToByteArray("9000");
-  private static final byte[] CMD_ERROR = BinaryUtils.HexStringToByteArray("6A82");
+  private static final byte[] R_APDU_OK = BinaryUtils.HexStringToByteArray("9000");
+  private static final byte[] R_APDU_ERROR = BinaryUtils.HexStringToByteArray("6A82");
+  private static final byte[] C_APDU_SELECT = BinaryUtils.HexStringToByteArray("00A4000C02");
+  private static final byte[] C_APDU_READ = BinaryUtils.HexStringToByteArray("00B0");
+  private static final byte[] FILENAME_CC = BinaryUtils.HexStringToByteArray("E103");
+  private static final byte[] FILENAME_NDEF = BinaryUtils.HexStringToByteArray("E104");
+  private static final byte[] CC_HEADER = BinaryUtils.HexStringToByteArray("001120FFFFFFFF");
+
+  private enum SelectedFile {
+    FILENAME_CC,
+    FILENAME_NDEF
+  };
 
   private NdefEntity ndefEntity;
+  private Boolean writable;
+  private SelectedFile selectedFile = null;
 
-  public NFCTagType4(String type, String content) {
-    ndefEntity = new NdefEntity(type, content);
+  public NFCTagType4(String type, String content, Boolean isWritable) {
+    this.ndefEntity = new NdefEntity(type, content);
+    this.writable = isWritable;
   }
 
-  private boolean READ_CAPABILITY_CONTAINER_CHECK = false;
+  private static byte[] getCCControlTlv(Boolean writable) {
+    return BinaryUtils.HexStringToByteArray("0406E104FFFE00" + (writable ? "00":"FF"));
+  }
+
+  private byte[] getCapabilityContainerContent() {
+    byte[] response = new byte[15];
+
+    System.arraycopy(CC_HEADER, 0, response, 0, CC_HEADER.length);
+
+    byte[] controlTlv = getCCControlTlv(writable);
+    System.arraycopy(controlTlv, 0, response, CC_HEADER.length, controlTlv.length);
+
+    return response;
+  }
+
+  private byte[] getNdefContent() {
+    byte[] fullResponse = new byte[ndefEntity.lengthArray.length + ndefEntity.byteArray.length];
+    System.arraycopy(ndefEntity.lengthArray, 0, fullResponse, 0, ndefEntity.lengthArray.length);
+    System.arraycopy(ndefEntity.byteArray,0, fullResponse, ndefEntity.lengthArray.length, ndefEntity.byteArray.length);
+
+    return fullResponse;
+  }
+
+  private byte[] getFullResponseByFile() {
+    switch (selectedFile) {
+      case FILENAME_CC:
+        return getCapabilityContainerContent();
+      case FILENAME_NDEF:
+        return getNdefContent();
+      default:
+        throw new Error("Unknown file");
+    }
+  }
 
   public boolean assertSelectCommand(byte[] command) {
     byte[] selectCommand = BinaryUtils.HexStringToByteArray("00A4040007D276000085010100");
     return Arrays.equals(command, selectCommand);
   }
 
+  private byte[] respondSelectFile(byte[] command) {
+    byte[] file = Arrays.copyOfRange(command, 5, 7);
+
+    if (Arrays.equals(file, FILENAME_CC)) {
+      this.selectedFile = SelectedFile.FILENAME_CC;
+    } else if (Arrays.equals(file, FILENAME_NDEF)) {
+      this.selectedFile = SelectedFile.FILENAME_NDEF;
+    }
+
+    if (this.selectedFile != null) {
+      return R_APDU_OK;
+    }
+
+    return R_APDU_ERROR;
+  }
+
+  private byte[] respondRead(byte[] command) {
+    if (this.selectedFile == null) {
+      return R_APDU_ERROR;
+    }
+
+    int offset = Integer.parseInt(BinaryUtils.ByteArrayToHexString(Arrays.copyOfRange(command, 2, 4)), 16);
+    int length = Integer.parseInt(BinaryUtils.ByteArrayToHexString(Arrays.copyOfRange(command, 4, 5)), 16);
+
+    byte[] fullResponse = getFullResponseByFile();
+    byte[] slicedResponse = Arrays.copyOfRange(fullResponse, offset, fullResponse.length);
+
+    int realLength = (slicedResponse.length <= length) ? slicedResponse.length : length;
+    byte[] response = new byte[realLength + R_APDU_OK.length];
+
+    System.arraycopy(slicedResponse, 0, response, 0, realLength);
+    System.arraycopy(R_APDU_OK, 0, response, realLength, R_APDU_OK.length);
+
+    return response;
+  }
+
   public byte[] processCommand(byte[] command) {
-    if (Arrays.equals(CMD_CAPABILITY_CONTAINER_OK, command)) {
-      Log.i(TAG, "Requesting CAPABILITY");
-      return CMD_OK;
+    if (Arrays.equals(Arrays.copyOfRange(command, 0, 5), C_APDU_SELECT)) {
+      return this.respondSelectFile(command);
     }
 
-    if (Arrays.equals(CMD_READ_CAPABILITY_CONTAINER, command) && !READ_CAPABILITY_CONTAINER_CHECK) {
-      Log.i(TAG, "Requesting CAPABILITY CONTAINER");
-      READ_CAPABILITY_CONTAINER_CHECK = true;
-      return CMD_READ_CAPABILITY_CONTAINER_RESPONSE;
-    }
-
-    if (Arrays.equals(CMD_NDEF_SELECT_OK, command)) {
-      Log.i(TAG, "Confirming CMD_NDEF_SELECT");
-      return CMD_OK;
-    }
-
-    if (Arrays.equals(CMD_NDEF_READ_BINARY_NLEN, command)) {
-      Log.i(TAG, "Requesting CMD_NDEF_READ_BINARY_NLEN");
-
-      byte[] response = new byte[ndefEntity.lengthArray.length + CMD_OK.length];
-      System.arraycopy(ndefEntity.lengthArray, 0, response, 0, ndefEntity.lengthArray.length);
-      System.arraycopy(CMD_OK, 0, response, ndefEntity.lengthArray.length, CMD_OK.length);
-
-      READ_CAPABILITY_CONTAINER_CHECK = false;
-      return response;
-    }
-
-    if (Arrays.equals(Arrays.copyOfRange(command, 0, 2), CMD_NDEF_READ_BINARY)) {
-      Log.i(TAG, "Requesting NDEF Content");
-
-      int offset = Integer.parseInt(BinaryUtils.ByteArrayToHexString(Arrays.copyOfRange(command, 2, 4)), 16);
-      int length = Integer.parseInt(BinaryUtils.ByteArrayToHexString(Arrays.copyOfRange(command, 4, 5)), 16);
-
-      byte[] fullResponse = new byte[ndefEntity.lengthArray.length + ndefEntity.byteArray.length];
-      System.arraycopy(ndefEntity.lengthArray, 0, fullResponse, 0, ndefEntity.lengthArray.length);
-      System.arraycopy(ndefEntity.byteArray,0, fullResponse, ndefEntity.lengthArray.length, ndefEntity.byteArray.length);
-
-      byte[] slicedResponse = Arrays.copyOfRange(fullResponse, offset, fullResponse.length);
-
-      int realLength = (slicedResponse.length <= length) ? slicedResponse.length : length;
-      byte[] response = new byte[realLength + CMD_OK.length];
-
-      System.arraycopy(slicedResponse, 0, response, 0, realLength);
-      System.arraycopy(CMD_OK, 0, response, realLength, CMD_OK.length);
-
-      READ_CAPABILITY_CONTAINER_CHECK = false;
-      return response;
+    if (Arrays.equals(Arrays.copyOfRange(command, 0, 2), C_APDU_READ)) {
+      return this.respondRead(command);
     }
 
     Log.i(TAG, "Unknown command.");
 
-    return CMD_ERROR;
+    return R_APDU_ERROR;
   }
 }
