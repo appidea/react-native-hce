@@ -2,7 +2,9 @@
   <img src="logo.png" alt="React Native HCE">
 </p>
 <p align="center">
-  Host card emulation (HCE) in React Native.<br/>
+  <i>
+    Adds Host card emulation (HCE) capabilities to React Native
+  </i>
 </p>
 
 ---
