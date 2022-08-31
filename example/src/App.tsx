@@ -1,15 +1,17 @@
-import React, { useCallback, useState, useRef } from 'react';
-import {
-  Button,
-  ScrollView,
-  StyleSheet, Switch,
-  Text,
-  TextInput,
-  TextStyle,
-  View,
-  ViewStyle,
-} from 'react-native';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
+import {StyleSheet, View, } from 'react-native';
 import HCESession, { NFCContentType, NFCTagType4 } from 'react-native-hce';
+import SetupView from './SetupView';
+import LogView from './LogView';
+import NavButton from './Controls/NavButton';
+import StateFab from './StateFAB';
+
+import type {ControlProps} from './ControlProps';
+
+enum Views {
+  VIEW_SETUP,
+  VIEW_LOG
+}
 
 const App: React.FC = (): JSX.Element => {
   const [content, setContent] = useState<string>('');
@@ -69,99 +71,62 @@ const App: React.FC = (): JSX.Element => {
     [setContentWritable, terminateSimulation]
   );
 
+  const getExistingSession = useCallback(async () => {
+    const session: (HCESession|null) = await HCESession.getExistingSession();
+
+    if (!session) {
+      return;
+    }
+
+    setContent(session.application.content.content);
+    setContentType(session.application.content.contentType);
+    setContentWritable(session.application.content.writable);
+    setSimulationEnabled(session.active);
+
+    simulationInstance.current = session;
+  }, [setContent, setContentType, setContentWritable, setSimulationEnabled]);
+
+  useEffect(() => {
+    void getExistingSession()
+  }, [getExistingSession]);
+
+  const [currentView, setCurrentView] = useState<Views>(Views.VIEW_SETUP);
+
+  const stateControlProps: ControlProps = {
+    contentType, selectNFCType, content, selectNFCContent, contentWritable, toggleNFCWritable,
+    simulationEnabled, startSimulation, terminateSimulation,
+    logMsg
+  }
+
   return (
     <View style={styles.container}>
-      <Text>Welcome to the HCE NFC Tag example.</Text>
+      <View style={{flexDirection: 'row', margin: 10}}>
+        <NavButton title="Set Up"
+                   onPress={() => setCurrentView(Views.VIEW_SETUP)}
+                   active={currentView === Views.VIEW_SETUP} />
 
-      <View style={{ flexDirection: 'row' }}>
-        <Button
-          title="Text content"
-          onPress={() => selectNFCType(NFCContentType.Text)}
-          disabled={contentType === NFCContentType.Text}
-        />
-
-        <Button
-          title="URL content"
-          onPress={() => selectNFCType(NFCContentType.URL)}
-          disabled={contentType === NFCContentType.URL}
-        />
+        <NavButton title="Event Log"
+                   onPress={() => setCurrentView(Views.VIEW_LOG)}
+                   active={currentView === Views.VIEW_LOG} />
       </View>
 
-      <TextInput
-        onChangeText={(text) => selectNFCContent(text)}
-        value={content}
-        placeholder="Enter the content here."
-      />
-
-      <View>
-        <Switch onChange={() => toggleNFCWritable()} value={contentWritable} />
-        <Text>Is tag writable?</Text>
+      <View style={{flex: 1, width: '100%'}}>
+        {currentView === Views.VIEW_SETUP && <SetupView {...stateControlProps} />}
+        {currentView === Views.VIEW_LOG && <LogView {...stateControlProps} />}
       </View>
 
-      <View style={{ flexDirection: 'row' }}>
-        {!simulationEnabled ? (
-          <Button
-            title="Start hosting the tag"
-            onPress={() => startSimulation()}
-          />
-        ) : (
-          <Button
-            title="Stop hosting the tag"
-            onPress={() => terminateSimulation()}
-          />
-        )}
-      </View>
-
-      <View style={styles.log}>
-        <View style={styles.logTitle}>
-          <Text style={styles.logTitleText}>Event Log</Text>
-        </View>
-
-        <ScrollView style={styles.logContent}>
-          <View style={styles.logContentInner}>
-            {logMsg.map((line, key) => (
-              <Text key={key}>{line.time + ' ' + line.message}</Text>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
+      <StateFab {...stateControlProps} />
     </View>
   );
 }
 
 export default App;
 
-interface Styles {
-  container: ViewStyle;
-  log: ViewStyle;
-  logTitle: ViewStyle;
-  logTitleText: TextStyle;
-  logContent: ViewStyle;
-  logContentInner: ViewStyle
-}
-
-const styles = StyleSheet.create<Styles>({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  log: {
-    width: '100%',
-    borderWidth: 1,
-    marginTop: 20
-  },
-  logTitle: {
-    backgroundColor: '#000'
-  },
-  logTitleText: {
-    color: '#FFF',
-    padding: 8
-  },
-  logContent: {
-    height: 200
-  },
-  logContentInner: {
-    padding: 8,
   }
 });
+
