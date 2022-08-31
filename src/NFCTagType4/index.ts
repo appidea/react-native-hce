@@ -22,6 +22,17 @@ class NFCTagType4 implements HCEApplication {
 
   content: any;
   type: string;
+
+  static contentTypeFromString(type: string) : NFCContentType {
+    switch (type) {
+      case "text":
+        return NFCContentType.Text;
+      case "url":
+        return NFCContentType.URL;
+      default:
+        throw new Error("Unknown type");
+    }
+  }
 }
 
 export default NFCTagType4;

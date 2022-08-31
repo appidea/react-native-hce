@@ -1,4 +1,4 @@
-import type HCEApplication from "./HCEApplication";
+import type HCEApplication from './HCEApplication';
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import NFCTagType4, { NFCContentType } from './NFCTagType4';
 
@@ -13,6 +13,33 @@ class HCESession {
   constructor(application: HCEApplication) {
     this.application = application;
     this.active = false;
+  }
+
+  static async getExistingSession(): Promise<(HCESession|null)> {
+    const content = await Hce.getContent();
+
+    if (!content) {
+      return null;
+    }
+
+    let type: (NFCContentType|null) = null;
+
+    switch (content.type) {
+      case "text":
+        type = NFCContentType.Text;
+        break;
+      case "url":
+        type = NFCContentType.URL;
+        break;
+      default:
+        throw new Error("Cannot map NDEF type");
+    }
+
+    const tag = new NFCTagType4(type, content.content, content.writable);
+    const session = new HCESession(tag);
+    session.active = content.enabled;
+
+    return session;
   }
 
   /**
@@ -53,7 +80,7 @@ class HCESession {
     });
   }
 
-  application: any;
+  application: HCEApplication;
 
   /**
    * Indication, if the session is still active.

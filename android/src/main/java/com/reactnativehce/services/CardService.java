@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import com.reactnativehce.HceAndroidViewModel;
 import com.reactnativehce.IHCEApplication;
+import com.reactnativehce.PrefManager;
 import com.reactnativehce.apps.nfc.NFCTagType4;
 import com.reactnativehce.utils.BinaryUtils;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class CardService extends HostApduService {
     private ArrayList<IHCEApplication> registeredHCEApplications = new ArrayList<IHCEApplication>();
     private IHCEApplication currentHCEApplication = null;
     private HceAndroidViewModel model = null;
+    private PrefManager prefManager;
 
     @Override
     public byte[] processCommandApdu(byte[] commandApdu, Bundle extras) {
@@ -47,17 +49,15 @@ public class CardService extends HostApduService {
     public void onCreate() {
       Log.d(TAG, "Starting service");
 
-      SharedPreferences prefs = getApplicationContext()
-        .getSharedPreferences("hce", Context.MODE_PRIVATE);
-
-      String type = prefs.getString("type", "text");
-      String content = prefs.getString("content", "No text provided");
-      Boolean writable = prefs.getBoolean("writable", false);
-
+      this.prefManager = PrefManager.getInstance(getApplicationContext());
       this.model = HceAndroidViewModel.getInstance(this.getApplicationContext());
       this.model.getLastState().setValue("CONNECTED");
 
-      registeredHCEApplications.add(new NFCTagType4(type, content, writable));
+      registeredHCEApplications.add(new NFCTagType4(
+        prefManager.getType(),
+        prefManager.getContent(),
+        prefManager.getWritable()
+      ));
     }
 
     @Override

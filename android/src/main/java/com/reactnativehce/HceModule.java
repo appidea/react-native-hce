@@ -1,28 +1,30 @@
 package com.reactnativehce;
 
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.util.Log;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
-import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
 import com.reactnativehce.services.CardService;
-
-import java.util.HashMap;
 
 public class HceModule extends ReactContextBaseJavaModule {
   private static ReactApplicationContext reactContext;
   private final EventManager listenerFactory;
+  private PrefManager prefManager;
 
   HceModule(ReactApplicationContext context) {
     super(context);
     reactContext = context;
     listenerFactory = EventManager.getInstance(context);
+    prefManager = PrefManager.getInstance(context.getApplicationContext());
+
+    if (prefManager.exists()) {
+      this.enableHceService(prefManager.getEnabled());
+    }
   }
 
   @Override
@@ -46,27 +48,42 @@ public class HceModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setContent(String type, String content, Boolean writable, Promise promise) {
-    SharedPreferences.Editor editor = reactContext.getApplicationContext().getSharedPreferences("hce", Context.MODE_PRIVATE)
-      .edit();
-
-    editor.putString("type", type);
-    editor.putString("content", content);
-    editor.putBoolean("writable", writable);
-
-    editor.apply();
+    prefManager.setType(type);
+    prefManager.setContent(content);
+    prefManager.setWritable(writable);
 
     promise.resolve(null);
   }
 
   @ReactMethod
-  public void setEnabled(Boolean enabled, Promise promise) {
+  public void getContent(Promise promise) {
+    if (!prefManager.exists()) {
+      promise.resolve(null);
+      return;
+    }
+
+    WritableMap wm = Arguments.createMap();
+    wm.putString("type", prefManager.getType());
+    wm.putString("content", prefManager.getContent());
+    wm.putBoolean("writable", prefManager.getWritable());
+    wm.putBoolean("enabled", prefManager.getEnabled());
+
+    promise.resolve(wm);
+  }
+
+  private void enableHceService(Boolean enabled) {
     reactContext.getApplicationContext().getPackageManager()
       .setComponentEnabledSetting(
         new ComponentName(reactContext.getApplicationContext(), CardService.class),
         enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
         PackageManager.DONT_KILL_APP
       );
+  }
 
+  @ReactMethod
+  public void setEnabled(Boolean enabled, Promise promise) {
+    this.prefManager.setEnabled(enabled);
+    this.enableHceService(enabled);
     promise.resolve(enabled);
   }
 }
