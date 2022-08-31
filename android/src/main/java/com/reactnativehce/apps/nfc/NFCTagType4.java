@@ -2,6 +2,7 @@ package com.reactnativehce.apps.nfc;
 
 import android.util.Log;
 
+import com.reactnativehce.ApduHelper;
 import com.reactnativehce.utils.BinaryUtils;
 import com.reactnativehce.IHCEApplication;
 
@@ -9,11 +10,7 @@ import java.util.Arrays;
 
 public class NFCTagType4 implements IHCEApplication {
   private static final String TAG = "NFCTag";
-
-  private static final byte[] R_APDU_OK = BinaryUtils.HexStringToByteArray("9000");
-  private static final byte[] R_APDU_ERROR = BinaryUtils.HexStringToByteArray("6A82");
-  private static final byte[] C_APDU_SELECT = BinaryUtils.HexStringToByteArray("00A4000C02");
-  private static final byte[] C_APDU_READ = BinaryUtils.HexStringToByteArray("00B0");
+  private static final byte[] C_APDU_SELECT = BinaryUtils.HexStringToByteArray("00A4040007D276000085010100");
   private static final byte[] FILENAME_CC = BinaryUtils.HexStringToByteArray("E103");
   private static final byte[] FILENAME_NDEF = BinaryUtils.HexStringToByteArray("E104");
   private static final byte[] CC_HEADER = BinaryUtils.HexStringToByteArray("001120FFFFFFFF");
@@ -67,8 +64,7 @@ public class NFCTagType4 implements IHCEApplication {
   }
 
   public boolean assertSelectCommand(byte[] command) {
-    byte[] selectCommand = BinaryUtils.HexStringToByteArray("00A4040007D276000085010100");
-    return Arrays.equals(command, selectCommand);
+    return ApduHelper.commandByRangeEquals(command, 0, 13, C_APDU_SELECT);
   }
 
   private byte[] respondSelectFile(byte[] command) {
@@ -81,15 +77,15 @@ public class NFCTagType4 implements IHCEApplication {
     }
 
     if (this.selectedFile != null) {
-      return R_APDU_OK;
+      return ApduHelper.R_APDU_OK;
     }
 
-    return R_APDU_ERROR;
+    return ApduHelper.R_APDU_ERROR;
   }
 
   private byte[] respondRead(byte[] command) {
     if (this.selectedFile == null) {
-      return R_APDU_ERROR;
+      return ApduHelper.R_APDU_ERROR;
     }
 
     int offset = Integer.parseInt(BinaryUtils.ByteArrayToHexString(Arrays.copyOfRange(command, 2, 4)), 16);
@@ -99,25 +95,25 @@ public class NFCTagType4 implements IHCEApplication {
     byte[] slicedResponse = Arrays.copyOfRange(fullResponse, offset, fullResponse.length);
 
     int realLength = Math.min(slicedResponse.length, length);
-    byte[] response = new byte[realLength + R_APDU_OK.length];
+    byte[] response = new byte[realLength + ApduHelper.R_APDU_OK.length];
 
     System.arraycopy(slicedResponse, 0, response, 0, realLength);
-    System.arraycopy(R_APDU_OK, 0, response, realLength, R_APDU_OK.length);
+    System.arraycopy(ApduHelper.R_APDU_OK, 0, response, realLength, ApduHelper.R_APDU_OK.length);
 
     return response;
   }
 
   public byte[] processCommand(byte[] command) {
-    if (Arrays.equals(Arrays.copyOfRange(command, 0, 5), C_APDU_SELECT)) {
+    if (ApduHelper.commandByRangeEquals(command, 0, 5, ApduHelper.C_APDU_SELECT_FILE)) {
       return this.respondSelectFile(command);
     }
 
-    if (Arrays.equals(Arrays.copyOfRange(command, 0, 2), C_APDU_READ)) {
+    if (ApduHelper.commandByRangeEquals(command, 0, 2, ApduHelper.C_APDU_READ)) {
       return this.respondRead(command);
     }
 
     Log.i(TAG, "Unknown command.");
 
-    return R_APDU_ERROR;
+    return ApduHelper.R_APDU_ERROR;
   }
 }
