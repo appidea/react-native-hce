@@ -27,7 +27,7 @@ public class HceAndroidViewModel extends AndroidViewModel {
 
   public MutableLiveData<String> getLastState() {
     if (lastState == null) {
-      lastState = new MutableLiveData<String>();
+      lastState = new MutableLiveData<>();
     }
 
     return lastState;

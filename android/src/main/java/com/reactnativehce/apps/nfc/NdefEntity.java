@@ -1,16 +1,12 @@
 package com.reactnativehce.apps.nfc;
 
 import android.nfc.NdefRecord;
-import android.util.Log;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import com.reactnativehce.utils.BinaryUtils;
 
 public class NdefEntity {
   public byte[] byteArray;
   public byte[] lengthArray;
-
-  public static String TAG = "NdefEntity";
 
   public NdefEntity(String type, String content) {
     NdefRecord record;
@@ -25,7 +21,7 @@ public class NdefEntity {
 
     byteArray = record.toByteArray();
     lengthArray = fillByteArrayToFixedDimension(
-      BigInteger.valueOf(Long.valueOf(byteArray.length)).toByteArray(),
+      BigInteger.valueOf((long) byteArray.length).toByteArray(),
       2
     );
   }

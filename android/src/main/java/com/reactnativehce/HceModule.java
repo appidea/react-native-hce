@@ -11,10 +11,12 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.WritableMap;
 import com.reactnativehce.services.CardService;
 
+import androidx.annotation.NonNull;
+
 public class HceModule extends ReactContextBaseJavaModule {
   private static ReactApplicationContext reactContext;
   private final EventManager listenerFactory;
-  private PrefManager prefManager;
+  private final PrefManager prefManager;
 
   HceModule(ReactApplicationContext context) {
     super(context);
@@ -27,12 +29,14 @@ public class HceModule extends ReactContextBaseJavaModule {
     }
   }
 
+  @NonNull
   @Override
   public String getName() {
     return "Hce";
   }
 
   @ReactMethod
+  @SuppressWarnings("unused")
   public void addListener(String eventName) throws Exception {
     if (!eventName.equals(EventManager.EVENT_STATE)) {
       throw new Exception("Event not supported: " + eventName);
@@ -42,11 +46,13 @@ public class HceModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  @SuppressWarnings("unused")
   public void removeListeners(Integer count) {
     this.listenerFactory.clear();
   }
 
   @ReactMethod
+  @SuppressWarnings("unused")
   public void setContent(String type, String content, Boolean writable, Promise promise) {
     prefManager.setType(type);
     prefManager.setContent(content);
@@ -56,6 +62,7 @@ public class HceModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  @SuppressWarnings("unused")
   public void getContent(Promise promise) {
     if (!prefManager.exists()) {
       promise.resolve(null);
@@ -81,6 +88,7 @@ public class HceModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  @SuppressWarnings("unused")
   public void setEnabled(Boolean enabled, Promise promise) {
     this.prefManager.setEnabled(enabled);
     this.enableHceService(enabled);

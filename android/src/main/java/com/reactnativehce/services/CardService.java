@@ -1,7 +1,5 @@
 package com.reactnativehce.services;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.nfc.cardemulation.HostApduService;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,11 +13,11 @@ import java.util.Arrays;
 
 public class CardService extends HostApduService {
     private static final String TAG = "CardService";
-    private static byte[] SELECT_APDU_HEADER = BinaryUtils.HexStringToByteArray("00A40400");
+    private static final byte[] SELECT_APDU_HEADER = BinaryUtils.HexStringToByteArray("00A40400");
     private static final byte[] CMD_OK = BinaryUtils.HexStringToByteArray("9000");
     private static final byte[] CMD_ERROR = BinaryUtils.HexStringToByteArray("6A82");
 
-    private ArrayList<IHCEApplication> registeredHCEApplications = new ArrayList<IHCEApplication>();
+    private final ArrayList<IHCEApplication> registeredHCEApplications = new ArrayList<>();
     private IHCEApplication currentHCEApplication = null;
     private HceAndroidViewModel model = null;
     private PrefManager prefManager;

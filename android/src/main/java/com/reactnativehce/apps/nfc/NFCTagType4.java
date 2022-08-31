@@ -21,10 +21,10 @@ public class NFCTagType4 implements IHCEApplication {
   private enum SelectedFile {
     FILENAME_CC,
     FILENAME_NDEF
-  };
+  }
 
-  private NdefEntity ndefEntity;
-  private Boolean writable;
+  private final NdefEntity ndefEntity;
+  private final Boolean writable;
   private SelectedFile selectedFile = null;
 
   public NFCTagType4(String type, String content, Boolean isWritable) {
@@ -98,7 +98,7 @@ public class NFCTagType4 implements IHCEApplication {
     byte[] fullResponse = getFullResponseByFile();
     byte[] slicedResponse = Arrays.copyOfRange(fullResponse, offset, fullResponse.length);
 
-    int realLength = (slicedResponse.length <= length) ? slicedResponse.length : length;
+    int realLength = Math.min(slicedResponse.length, length);
     byte[] response = new byte[realLength + R_APDU_OK.length];
 
     System.arraycopy(slicedResponse, 0, response, 0, realLength);

@@ -23,6 +23,8 @@ public class EventManager {
   final Observer<String> observer = new Observer<String>() {
     @Override
     public void onChanged(@Nullable final String lastState) {
+      assert lastState != null;
+
       if (lastState.equals(lastReportedState) || ( lastReportedState == null && lastState.equals("DISCONNECTED") )) {
         return;
       }

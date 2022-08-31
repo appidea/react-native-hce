@@ -2,7 +2,6 @@ package com.reactnativehce;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 public class PrefManager {
   private static PrefManager instance = null;
