@@ -1,19 +1,21 @@
-import { NFCContentType } from 'react-native-hce';
+import HCESession, { NFCContentType } from 'react-native-hce';
 
 interface LogEntry {
   time: string,
   message: string
 }
 
-export interface ControlProps {
-  contentType: string,
-  selectNFCType: (type: NFCContentType) => void,
+interface NFCTagReactStateProps {
   content: string,
-  selectNFCContent: (text: string) => void,
-  contentWritable: boolean,
-  toggleNFCWritable: () => void,
-  simulationEnabled: boolean,
-  startSimulation: () => void,
-  terminateSimulation: () => void,
+  type: string,
+  writable: boolean
+}
+
+export interface ControlProps {
+  nfcTagProps: NFCTagReactStateProps,
+  updateProp: any,
+  session: (HCESession|null),
+  startSession: () => void,
+  terminateSession: () => void,
   logMsg: LogEntry[]
 }

@@ -1,106 +1,101 @@
-import React, { useCallback, useState, useRef, useEffect } from 'react';
-import {StyleSheet, View, } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import HCESession, { NFCContentType, NFCTagType4 } from 'react-native-hce';
 import SetupView from './SetupView';
 import LogView from './LogView';
 import NavButton from './Controls/NavButton';
 import StateFab from './StateFAB';
 
-import type {ControlProps} from './ControlProps';
+import type { ControlProps, NFCTagReactStateProps } from './ControlProps';
 
 enum Views {
   VIEW_SETUP,
   VIEW_LOG
 }
 
+const defaultProps: NFCTagReactStateProps = {
+  content: "",
+  type: NFCTagType4.stringFromContentType(NFCContentType.Text),
+  writable: false
+};
+
 const App: React.FC = (): JSX.Element => {
-  const [content, setContent] = useState<string>('');
-  const [contentType, setContentType] = useState<NFCContentType>(NFCContentType.Text);
-  const [contentWritable, setContentWritable] = useState<boolean>(false);
-  const simulationInstance = useRef<HCESession | undefined>();
-  const [simulationEnabled, setSimulationEnabled] = useState<boolean>(false);
+  const [nfcTagProps, setNfcTagProps] = useState<NFCTagReactStateProps>(defaultProps);
   const [logMsg, setLogMsg] = useState<Array<any>>([]);
+  const [currentView, setCurrentView] = useState<Views>(Views.VIEW_SETUP);
+  const [session, setSession] = useState<HCESession | null>(null);
   const listener = useRef<any>(null);
 
-  const terminateSimulation = useCallback(async () => {
-    const instance = simulationInstance.current;
+  const terminateSession = useCallback(async () => {
+    if (!session) {
+      return;
+    }
+
+    await session.terminate();
+    setSession(null);
+  }, [session, setSession]);
+
+  const startSession = useCallback(async () => {
+    const tag = new NFCTagType4({
+      type: NFCTagType4.contentTypeFromString(nfcTagProps.type),
+      content: nfcTagProps.content,
+      writable: nfcTagProps.writable
+    });
+
+    const instance = await new HCESession(tag).start();
+
+    setSession(instance);
+  }, [setSession, nfcTagProps]);
+
+  const getExistingSession = useCallback(async () => {
+    const instance: (HCESession|null) = await HCESession.getExistingSession();
 
     if (!instance) {
       return;
     }
 
-    await instance.terminate();
-    setSimulationEnabled(instance.active);
-    listener.current?.remove();
-  }, [setSimulationEnabled, simulationInstance, listener]);
+    setSession(instance);
+  }, [setSession]);
 
-  const startSimulation = useCallback(async () => {
-    const tag = new NFCTagType4(contentType, content, contentWritable);
-    simulationInstance.current = await new HCESession(tag).start();
-    setSimulationEnabled(simulationInstance.current.active);
+  const updateProp = useCallback((prop: string, value: any) => {
+    setNfcTagProps((state: any) => ({...state, [prop]: value}));
+    void terminateSession();
+  }, [setNfcTagProps, terminateSession]);
 
-    listener.current = simulationInstance.current.addListener('hceState', (eventData) => {
-      setLogMsg(msg => ([...msg, {
-        time: (new Date()).toISOString(),
-        message: eventData
-      }]));
-    });
-  }, [setSimulationEnabled, simulationInstance, content, contentWritable, contentType, listener, setLogMsg]);
-
-  const selectNFCType = useCallback(
-    (type) => {
-      setContentType(type);
-      void terminateSimulation();
-    },
-    [setContentType, terminateSimulation]
-  );
-
-  const selectNFCContent = useCallback(
-    (text) => {
-      setContent(text);
-      void terminateSimulation();
-    },
-    [setContent, terminateSimulation]
-  );
-
-  const toggleNFCWritable = useCallback(
-    () => {
-      setContentWritable(state => !state);
-      void terminateSimulation();
-    },
-    [setContentWritable, terminateSimulation]
-  );
-
-  const getExistingSession = useCallback(async () => {
-    const session: (HCESession|null) = await HCESession.getExistingSession();
-
-    if (!session) {
-      return;
-    }
-
-    setContent(session.application.content.content);
-    setContentType(session.application.content.contentType);
-    setContentWritable(session.application.content.writable);
-    setSimulationEnabled(session.active);
-
-    simulationInstance.current = session;
-  }, [setContent, setContentType, setContentWritable, setSimulationEnabled]);
+  const logger = useCallback((eventData) => {
+    setLogMsg(msg => ([...msg, {
+      time: (new Date()).toISOString(),
+      message: eventData
+    }]));
+  }, [setLogMsg]);
 
   useEffect(() => {
     void getExistingSession()
   }, [getExistingSession]);
 
-  const [currentView, setCurrentView] = useState<Views>(Views.VIEW_SETUP);
+  useEffect(() => {
+    if (session) {
+      listener.current = session.addListener('hceState', logger);
+
+      setNfcTagProps({
+        content: session.application.content.content,
+        type: NFCTagType4.stringFromContentType(session.application.content.type),
+        writable: session.application.content.writable
+      })
+    } else {
+      listener.current?.remove();
+    }
+  }, [session, logger, listener]);
 
   const stateControlProps: ControlProps = {
-    contentType, selectNFCType, content, selectNFCContent, contentWritable, toggleNFCWritable,
-    simulationEnabled, startSimulation, terminateSimulation,
+    nfcTagProps, updateProp,
+    session, startSession, terminateSession,
     logMsg
   }
 
   return (
     <View style={styles.container}>
-      <View style={{flexDirection: 'row', margin: 10}}>
+      <View style={styles.navigation}>
         <NavButton title="Set Up"
                    onPress={() => setCurrentView(Views.VIEW_SETUP)}
                    active={currentView === Views.VIEW_SETUP} />
@@ -110,7 +105,7 @@ const App: React.FC = (): JSX.Element => {
                    active={currentView === Views.VIEW_LOG} />
       </View>
 
-      <View style={{flex: 1, width: '100%'}}>
+      <View style={styles.content}>
         {currentView === Views.VIEW_SETUP && <SetupView {...stateControlProps} />}
         {currentView === Views.VIEW_LOG && <LogView {...stateControlProps} />}
       </View>
@@ -127,6 +122,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  navigation: {
+    flexDirection: 'row',
+    margin: 10
+  },
+  content: {
+    flex: 1,
+    width: '100%'
   }
 });
 
