@@ -58,7 +58,6 @@ public class HceModule extends ReactContextBaseJavaModule {
   @ReactMethod
   @SuppressWarnings("unused")
   public void setContent(ReadableMap properties, Promise promise) {
-    Log.i("IHCE", properties.getString("type"));
     prefManager.setType(properties.getString("type"));
     prefManager.setContent(properties.getString("content"));
     prefManager.setWritable(properties.getBoolean("writable"));
