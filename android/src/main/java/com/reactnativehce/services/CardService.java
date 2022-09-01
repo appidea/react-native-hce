@@ -1,14 +1,16 @@
 package com.reactnativehce.services;
 
+import android.content.Context;
 import android.nfc.cardemulation.HostApduService;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.reactnativehce.ApduHelper;
+import com.reactnativehce.utils.ApduHelper;
 import com.reactnativehce.HceAndroidViewModel;
 import com.reactnativehce.IHCEApplication;
-import com.reactnativehce.PrefManager;
+import com.reactnativehce.managers.PrefManager;
 import com.reactnativehce.apps.nfc.NFCTagType4;
+
 import java.util.ArrayList;
 
 public class CardService extends HostApduService {
@@ -16,8 +18,6 @@ public class CardService extends HostApduService {
 
     private final ArrayList<IHCEApplication> registeredHCEApplications = new ArrayList<>();
     private IHCEApplication currentHCEApplication = null;
-    private HceAndroidViewModel model = null;
-    private PrefManager prefManager;
 
     @Override
     public byte[] processCommandApdu(byte[] command, Bundle extras) {
@@ -29,7 +29,6 @@ public class CardService extends HostApduService {
         for (IHCEApplication app : registeredHCEApplications) {
           if (app.assertSelectCommand(command)) {
             currentHCEApplication = app;
-            this.model.getLastState().setValue("NFC");
             return ApduHelper.R_APDU_OK;
           }
         }
@@ -41,21 +40,17 @@ public class CardService extends HostApduService {
     @Override
     public void onCreate() {
       Log.d(TAG, "Starting service");
-
-      this.prefManager = PrefManager.getInstance(getApplicationContext());
-      this.model = HceAndroidViewModel.getInstance(this.getApplicationContext());
-      this.model.getLastState().setValue("CONNECTED");
+      Context context = getApplicationContext();
 
       registeredHCEApplications.add(new NFCTagType4(
-        prefManager.getType(),
-        prefManager.getContent(),
-        prefManager.getWritable()
+        PrefManager.getInstance(context),
+        HceAndroidViewModel.getInstance(context)
       ));
     }
 
     @Override
     public void onDeactivated(int reason) {
-      this.model.getLastState().setValue("DISCONNECTED");
       Log.d(TAG, "Finishing service: " + reason);
+      this.currentHCEApplication.onDestroy(reason);
     }
 }

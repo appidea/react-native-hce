@@ -5,19 +5,29 @@ export enum NFCContentType {
   URL = 'url',
 }
 
+export interface NFCTagType4Props {
+  /**
+   * The NDEF type: text or url. Use the values from NFCContentType
+   */
+  type: NFCContentType,
+  /**
+   * The actual content of NDEF message.
+   */
+  content: string,
+  /**
+   * Defines if the tag is writable.
+   */
+  writable: boolean
+}
+
 class NFCTagType4 implements HCEApplication {
   /**
    * Creates a new instance of NFCTagType4 containing an NDEF message.
-   * @param contentType The NDEF type: text or url. Use the values from NFCContentType
-   * @param content The actual content of NDEF message.
+   * @param props Props of the tag
    */
-  constructor(contentType: NFCContentType, content: string, writable: boolean) {
+  constructor(props: NFCTagType4Props) {
     this.type = 'NFCTag';
-    this.content = {
-      contentType,
-      content,
-      writable
-    };
+    this.content = {...props};
   }
 
   content: any;
@@ -29,6 +39,17 @@ class NFCTagType4 implements HCEApplication {
         return NFCContentType.Text;
       case "url":
         return NFCContentType.URL;
+      default:
+        throw new Error("Unknown type");
+    }
+  }
+
+  static stringFromContentType(type: NFCContentType) : string {
+    switch (type) {
+      case NFCContentType.URL:
+        return "url";
+      case NFCContentType.Text:
+        return "text";
       default:
         throw new Error("Unknown type");
     }

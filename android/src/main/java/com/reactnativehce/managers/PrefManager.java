@@ -1,4 +1,4 @@
-package com.reactnativehce;
+package com.reactnativehce.managers;
 
 import android.content.Context;
 import android.content.SharedPreferences;

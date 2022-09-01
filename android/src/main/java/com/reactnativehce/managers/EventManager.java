@@ -1,4 +1,4 @@
-package com.reactnativehce;
+package com.reactnativehce.managers;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -8,6 +8,7 @@ import androidx.lifecycle.Observer;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.reactnativehce.HceAndroidViewModel;
 
 import java.util.HashSet;
 

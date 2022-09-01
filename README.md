@@ -129,31 +129,36 @@ This is how to enable the NFC Tag emulation:
 ```js
 import HCESession, { NFCContentType, NFCTagType4 } from 'react-native-hce';
 
-let simulation;
+let session;
 
-const startSimulation = async () => {
-    const tag = new NFCTagType4(NFCContentType.Text, "Hello world");
-    simulation = await (new HCESession(tag)).start();
+const startSession = async () => {
+    const tag = new NFCTagType4({
+      type: NFCContentType.Text,
+      content: "Hello world",
+      writable: false
+    });
+
+    session = await (new HCESession(tag)).start();
 }
 
-startSimulation();
+startSession();
 ```
 
 stops this way:
 
 ```js
-const stopSimulation = async () => {
-  await simulation.terminate();
+const stopSession = async () => {
+  await session.terminate();
 }
 
 stopSimulation();
 ```
 
-It is possible to listen for events during the simulation:
+It is possible to listen for events during the emulation:
 
 ```js
 const listen = async () => {
-  const listener = simulation.addListener('hceStatus', (currentStatus) => {
+  const listener = session.addListener('hceStatus', (currentStatus) => {
     switch (currentStatus) {
       case "CONNECTED":
         // HCE transmission has been routed to the application.

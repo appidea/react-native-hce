@@ -2,13 +2,17 @@ package com.reactnativehce;
 
 import android.content.ComponentName;
 import android.content.pm.PackageManager;
+import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
+import com.reactnativehce.managers.EventManager;
+import com.reactnativehce.managers.PrefManager;
 import com.reactnativehce.services.CardService;
 
 import androidx.annotation.NonNull;
@@ -53,10 +57,11 @@ public class HceModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   @SuppressWarnings("unused")
-  public void setContent(String type, String content, Boolean writable, Promise promise) {
-    prefManager.setType(type);
-    prefManager.setContent(content);
-    prefManager.setWritable(writable);
+  public void setContent(ReadableMap properties, Promise promise) {
+    Log.i("IHCE", properties.getString("type"));
+    prefManager.setType(properties.getString("type"));
+    prefManager.setContent(properties.getString("content"));
+    prefManager.setWritable(properties.getBoolean("writable"));
 
     promise.resolve(null);
   }
@@ -69,13 +74,12 @@ public class HceModule extends ReactContextBaseJavaModule {
       return;
     }
 
-    WritableMap wm = Arguments.createMap();
-    wm.putString("type", prefManager.getType());
-    wm.putString("content", prefManager.getContent());
-    wm.putBoolean("writable", prefManager.getWritable());
-    wm.putBoolean("enabled", prefManager.getEnabled());
+    WritableMap properties = Arguments.createMap();
+    properties.putString("type", prefManager.getType());
+    properties.putString("content", prefManager.getContent());
+    properties.putBoolean("writable", prefManager.getWritable());
 
-    promise.resolve(wm);
+    promise.resolve(properties);
   }
 
   private void enableHceService(Boolean enabled) {
@@ -85,6 +89,12 @@ public class HceModule extends ReactContextBaseJavaModule {
         enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
         PackageManager.DONT_KILL_APP
       );
+  }
+
+  @ReactMethod
+  @SuppressWarnings("unused")
+  public void getEnabled(Promise promise) {
+    promise.resolve(prefManager.getEnabled());
   }
 
   @ReactMethod

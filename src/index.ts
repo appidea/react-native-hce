@@ -1,6 +1,6 @@
 import type HCEApplication from './HCEApplication';
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
-import NFCTagType4, { NFCContentType } from './NFCTagType4';
+import NFCTagType4, { NFCContentType, NFCTagType4Props } from './NFCTagType4';
 
 const { Hce } = NativeModules;
 const eventEmitter = new NativeEventEmitter(Hce);
@@ -15,29 +15,30 @@ class HCESession {
     this.active = false;
   }
 
+  addListener = eventEmitter.addListener;
+
   static async getExistingSession(): Promise<(HCESession|null)> {
+    const active = await Hce.getEnabled();
+
+    if (!active) {
+      return null;
+    }
+
     const content = await Hce.getContent();
 
     if (!content) {
       return null;
     }
 
-    let type: (NFCContentType|null) = null;
+    const nfcProps: NFCTagType4Props = {
+      type: NFCTagType4.contentTypeFromString(content.type),
+      content: content.content,
+      writable: content.writable
+    };
 
-    switch (content.type) {
-      case "text":
-        type = NFCContentType.Text;
-        break;
-      case "url":
-        type = NFCContentType.URL;
-        break;
-      default:
-        throw new Error("Cannot map NDEF type");
-    }
-
-    const tag = new NFCTagType4(type, content.content, content.writable);
+    const tag = new NFCTagType4(nfcProps);
     const session = new HCESession(tag);
-    session.active = content.enabled;
+    session.active = active;
 
     return session;
   }
@@ -58,27 +59,13 @@ class HCESession {
       throw new Error('react-native-hce does not support this platform');
     }
 
-    if (this.application instanceof NFCTagType4) {
-      await Hce.setContent(
-        this.application.content.contentType,
-        this.application.content.content,
-        this.application.content.writable
-      );
+    await Hce.setContent(this.application.content);
+    await Hce.setEnabled(true);
 
-      await Hce.setEnabled(true);
-      this.active = true;
+    this.active = true;
 
-      return this;
-    }
-
-    throw new Error('Unrecognized app type.');
+    return this;
   };
-
-  addListener = (eventName: string, callback: (eventData: void) => void) => {
-    return eventEmitter.addListener(eventName, (eventProp) => {
-      callback(eventProp);
-    });
-  }
 
   application: HCEApplication;
 
