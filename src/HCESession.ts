@@ -11,13 +11,13 @@ import { NFCTagType4 } from './NFCTagType4';
 const { Hce: NativeHce } = NativeModules;
 const eventEmitter = new NativeEventEmitter(NativeHce);
 
-let instance: (HCESession|null) = null;
+let instance: HCESession | null = null;
 
 const checkPlatform = (): void => {
   if (Platform.OS !== 'android') {
     throw new Error('react-native-hce does not support this platform');
   }
-}
+};
 
 interface HCESessionEvents {
   HCE_STATE_CONNECTED: string;
@@ -72,7 +72,7 @@ export class HCESession {
     }
 
     this.stateListeners
-      .filter(i => i !== null)
+      .filter((i) => i !== null)
       .forEach(({ event, listener }) => {
         if (incomingEvent === event) {
           listener();
@@ -86,7 +86,7 @@ export class HCESession {
    * As there is only one HCE Session per application available,
    * use this function to get the instance instead of using the constructor.
    */
-  static async getInstance(): Promise<(HCESession)> {
+  static async getInstance(): Promise<HCESession> {
     checkPlatform();
 
     if (instance !== null) {
@@ -101,7 +101,8 @@ export class HCESession {
 
   on(event: string, listener: () => void) {
     const index = this.stateListeners.push({ event, listener });
-    return () => this.stateListeners[index] = null;
+    // eslint-disable-next-line no-return-assign
+    return () => (this.stateListeners[index] = null);
   }
 
   /**
@@ -113,7 +114,7 @@ export class HCESession {
     return eventEmitter.addListener(eventName, (eventProp) => {
       callback(eventProp);
     });
-  }
+  };
 
   /**
    * Executes the synchronization of state with native module.
@@ -135,7 +136,7 @@ export class HCESession {
     this.application = new NFCTagType4({
       type: NFCTagType4.contentTypeFromString(content.type),
       content: content.content,
-      writable: content.writable
+      writable: content.writable,
     });
 
     this.enabled = enabled;
@@ -161,7 +162,7 @@ export class HCESession {
   /**
    * Get current instance of application present in HCESession.
    */
-  getApplication(): (HCEApplication|null) {
+  getApplication(): HCEApplication | null {
     return this.application;
   }
 
@@ -177,7 +178,7 @@ export class HCESession {
    */
   setEnabled = async (enable: boolean): Promise<void> => {
     if (!this.application && enable) {
-      throw new Error("No application set!");
+      throw new Error('No application set!');
     }
 
     await NativeHce.setEnabled(enable);

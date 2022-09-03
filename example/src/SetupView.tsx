@@ -4,9 +4,9 @@
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  */
 
-import React  from 'react';
+import React from 'react';
 import { Image, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
 import { NFCContentType, NFCTagType4 } from 'react-native-hce';
 import FormRow from './Controls/FormRow';
 import type { DataLayer } from './DataLayerTypes';
@@ -26,15 +26,21 @@ const App = ({ nfcTagProps, updateProp }: DataLayer) => (
     </View>
 
     <FormRow label="Select content type">
-      <HCEPicker selectedValue={nfcTagProps.type}
-                 style={{height: 50}}
-                 onValueChange={(itemValue: string) => updateProp('type', itemValue)}>
-        <HCEPickerItem label="Text"
-                       key={1}
-                       value={NFCTagType4.stringFromContentType(NFCContentType.Text)} />
-        <HCEPickerItem label="URL"
-                       key={2}
-                       value={NFCTagType4.stringFromContentType(NFCContentType.URL)} />
+      <HCEPicker
+        selectedValue={nfcTagProps.type}
+        style={styles.typePicker}
+        onValueChange={(itemValue: string) => updateProp('type', itemValue)}
+      >
+        <HCEPickerItem
+          label="Text"
+          key={1}
+          value={NFCTagType4.stringFromContentType(NFCContentType.Text)}
+        />
+        <HCEPickerItem
+          label="URL"
+          key={2}
+          value={NFCTagType4.stringFromContentType(NFCContentType.URL)}
+        />
       </HCEPicker>
     </FormRow>
 
@@ -50,9 +56,11 @@ const App = ({ nfcTagProps, updateProp }: DataLayer) => (
     </FormRow>
 
     <FormRow label="Is tag writable?">
-      <Switch onChange={() => updateProp('writable', !nfcTagProps.writable)}
-              value={nfcTagProps.writable}
-              style={styles.fieldWritable} />
+      <Switch
+        onChange={() => updateProp('writable', !nfcTagProps.writable)}
+        value={nfcTagProps.writable}
+        style={styles.fieldWritable}
+      />
     </FormRow>
   </View>
 );
@@ -65,25 +73,27 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40
+    marginBottom: 40,
   },
   headerLogo: {
     height: 160,
-    aspectRatio: 1.516
+    aspectRatio: 1.516,
   },
   headerText: {
     fontWeight: 'bold',
-    marginTop: 10
+    marginTop: 10,
   },
   fieldWritable: {
     width: 50,
     marginVertical: 10,
-    marginHorizontal: 4
+    marginHorizontal: 4,
   },
   fieldContent: {
-    paddingHorizontal: 16
-  }
+    paddingHorizontal: 16,
+  },
+  typePicker: {
+    height: 50,
+  },
 });
 
 export default App;
-

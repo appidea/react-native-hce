@@ -8,7 +8,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { DataLayer } from './DataLayerTypes';
 
-const LogView = ({ log } : DataLayer) => {
+const LogView = ({ log }: DataLayer) => {
   return (
     <View>
       <View style={styles.log}>
@@ -28,7 +28,6 @@ const LogView = ({ log } : DataLayer) => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -38,21 +37,21 @@ const styles = StyleSheet.create({
   log: {
     width: '100%',
     borderWidth: 1,
-    marginTop: 20
+    marginTop: 20,
   },
   logTitle: {
-    backgroundColor: '#000'
+    backgroundColor: '#000',
   },
   logTitleText: {
     color: '#FFF',
-    padding: 8
+    padding: 8,
   },
   logContent: {
-    height: 200
+    height: 200,
   },
   logContentInner: {
     padding: 8,
-  }
+  },
 });
 
 export default LogView;

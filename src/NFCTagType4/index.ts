@@ -4,7 +4,7 @@
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  */
 
-import type HCEApplication from "../HCEApplication";
+import type { HCEApplication } from '../HCEApplication';
 
 export enum NFCContentType {
   Text = 'text',
@@ -15,15 +15,15 @@ export interface NFCTagType4Props {
   /**
    * The NDEF type: text or url. Use the values from NFCContentType
    */
-  type: NFCContentType,
+  type: NFCContentType;
   /**
    * The actual content of NDEF message.
    */
-  content: string,
+  content: string;
   /**
    * Defines if the tag is writable.
    */
-  writable: boolean
+  writable: boolean;
 }
 
 export class NFCTagType4 implements HCEApplication {
@@ -33,31 +33,31 @@ export class NFCTagType4 implements HCEApplication {
    */
   constructor(props: NFCTagType4Props) {
     this.type = 'NFCTag';
-    this.content = {...props};
+    this.content = { ...props };
   }
 
   content: any;
   type: string;
 
-  static contentTypeFromString(type: string) : NFCContentType {
+  static contentTypeFromString(type: string): NFCContentType {
     switch (type) {
-      case "text":
+      case 'text':
         return NFCContentType.Text;
-      case "url":
+      case 'url':
         return NFCContentType.URL;
       default:
-        throw new Error("Unknown type");
+        throw new Error('Unknown type');
     }
   }
 
-  static stringFromContentType(type: NFCContentType) : string {
+  static stringFromContentType(type: NFCContentType): string {
     switch (type) {
       case NFCContentType.URL:
-        return "url";
+        return 'url';
       case NFCContentType.Text:
-        return "text";
+        return 'text';
       default:
-        throw new Error("Unknown type");
+        throw new Error('Unknown type');
     }
   }
 }

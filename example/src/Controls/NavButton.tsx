@@ -5,22 +5,30 @@
  */
 
 import React from 'react';
-import { Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 interface NavButtonProps {
-  onPress: () => any,
-  active: boolean,
-  title: string
+  onPress: () => any;
+  active: boolean;
+  title: string;
 }
 
-const NavButton = ({onPress, active, title}: NavButtonProps) => {
+const NavButton = ({ onPress, active, title }: NavButtonProps) => {
   return (
-    <TouchableOpacity onPress={onPress} style={{margin: 10}}>
-      <Text style={{fontWeight: active ? 'bold' : 'normal'}}>
-        {title}
-      </Text>
+    <TouchableOpacity onPress={onPress} style={styles.container}>
+      <Text style={active ? styles.boldText : styles.normalText}>{title}</Text>
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  container: { margin: 10 },
+  boldText: {
+    fontWeight: 'bold',
+  },
+  normalText: {
+    fontWeight: 'normal',
+  },
+});
 
 export default NavButton;

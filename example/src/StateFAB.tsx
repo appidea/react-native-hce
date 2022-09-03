@@ -14,8 +14,7 @@ const inactiveBtn = require('./images/btn-inactive.png');
 const StateFAB = ({ enabled, switchSession }: DataLayer) => (
   <View style={styles.container}>
     <TouchableOpacity onPress={() => switchSession(!enabled)}>
-      <Image style={styles.icon}
-             source={enabled ? activeBtn : inactiveBtn} />
+      <Image style={styles.icon} source={enabled ? activeBtn : inactiveBtn} />
     </TouchableOpacity>
   </View>
 );
@@ -25,12 +24,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     position: 'absolute',
     bottom: 15,
-    right: 15
+    right: 15,
   },
   icon: {
     width: 80,
-    height: 80
-  }
-})
+    height: 80,
+  },
+});
 
 export default StateFAB;

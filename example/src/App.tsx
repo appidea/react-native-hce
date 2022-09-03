@@ -16,7 +16,7 @@ import useDataLayer from './useDataLayer';
 
 enum Views {
   VIEW_SETUP,
-  VIEW_LOG
+  VIEW_LOG,
 }
 
 const App: React.FC = (): JSX.Element => {
@@ -26,13 +26,17 @@ const App: React.FC = (): JSX.Element => {
   return (
     <View style={styles.container}>
       <View style={styles.navigation}>
-        <NavButton title="Set Up"
-                   onPress={() => setCurrentView(Views.VIEW_SETUP)}
-                   active={currentView === Views.VIEW_SETUP} />
+        <NavButton
+          title="Set Up"
+          onPress={() => setCurrentView(Views.VIEW_SETUP)}
+          active={currentView === Views.VIEW_SETUP}
+        />
 
-        <NavButton title="Event Log"
-                   onPress={() => setCurrentView(Views.VIEW_LOG)}
-                   active={currentView === Views.VIEW_LOG} />
+        <NavButton
+          title="Event Log"
+          onPress={() => setCurrentView(Views.VIEW_LOG)}
+          active={currentView === Views.VIEW_LOG}
+        />
       </View>
 
       <View style={styles.content}>
@@ -44,7 +48,7 @@ const App: React.FC = (): JSX.Element => {
       <StateFab {...dataLayer} />
     </View>
   );
-}
+};
 
 export default () => (
   <HCESessionProvider>
@@ -60,11 +64,10 @@ const styles = StyleSheet.create({
   },
   navigation: {
     flexDirection: 'row',
-    margin: 10
+    margin: 10,
   },
   content: {
     flex: 1,
-    width: '100%'
-  }
+    width: '100%',
+  },
 });
-

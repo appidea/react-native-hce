@@ -4,9 +4,7 @@
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  */
 
-type HCEApplication = {
+export type HCEApplication = {
   type: string;
   content: any;
 };
-
-export default HCEApplication;

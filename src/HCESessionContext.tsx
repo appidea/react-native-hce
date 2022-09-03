@@ -8,11 +8,11 @@ import React, { createContext, useEffect, useState } from 'react';
 import { HCESession } from './HCESession';
 
 interface HCEReactContextProps {
-  session: HCESession
+  session: HCESession;
 }
 
-export const HCESessionContext = createContext<(HCEReactContextProps)>({
-  session: new HCESession()
+export const HCESessionContext = createContext<HCEReactContextProps>({
+  session: new HCESession(),
 });
 
 export const HCESessionProvider: React.FC = (props) => {
@@ -20,11 +20,9 @@ export const HCESessionProvider: React.FC = (props) => {
 
   useEffect(() => {
     if (!session) {
-      HCESession
-        .getInstance()
-        .then(instance => {
-          setSession(instance);
-        });
+      HCESession.getInstance().then((instance) => {
+        setSession(instance);
+      });
     }
   }, [session, setSession]);
 
@@ -32,7 +30,5 @@ export const HCESessionProvider: React.FC = (props) => {
     return null;
   }
 
-  return (
-    <HCESessionContext.Provider value={{ session }} {...props} />
-  )
-}
+  return <HCESessionContext.Provider value={{ session }} {...props} />;
+};
