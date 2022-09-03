@@ -6,9 +6,9 @@
 
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import type { ControlProps } from './ControlProps';
+import type { DataLayer } from './DataLayerTypes';
 
-const LogView = ({ logMsg } : ControlProps) => {
+const LogView = ({ log } : DataLayer) => {
   return (
     <View>
       <View style={styles.log}>
@@ -18,7 +18,7 @@ const LogView = ({ logMsg } : ControlProps) => {
 
         <ScrollView style={styles.logContent}>
           <View style={styles.logContentInner}>
-            {logMsg.map((line, key) => (
+            {log.map((line, key) => (
               <Text key={key}>{line.time + ' ' + line.message}</Text>
             ))}
           </View>

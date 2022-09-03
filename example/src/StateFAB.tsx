@@ -6,23 +6,19 @@
 
 import React from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import type { ControlProps } from './ControlProps';
+import type { DataLayer } from './DataLayerTypes';
 
 const activeBtn = require('./images/btn-active.png');
 const inactiveBtn = require('./images/btn-inactive.png');
 
-const StateFab = ({ session, terminateSession, startSession }: ControlProps) => {
-  const toggle = () => session ? terminateSession() : startSession();
-
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={toggle}>
-        <Image style={styles.icon}
-               source={session ? activeBtn : inactiveBtn} />
-      </TouchableOpacity>
-    </View>
-  );
-};
+const StateFAB = ({ enabled, switchSession }: DataLayer) => (
+  <View style={styles.container}>
+    <TouchableOpacity onPress={() => switchSession(!enabled)}>
+      <Image style={styles.icon}
+             source={enabled ? activeBtn : inactiveBtn} />
+    </TouchableOpacity>
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -37,4 +33,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default StateFab;
+export default StateFAB;

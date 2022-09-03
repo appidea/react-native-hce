@@ -4,100 +4,24 @@
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import HCESession, { NFCContentType, NFCTagType4 } from 'react-native-hce';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
+import { HCESessionProvider } from 'react-native-hce';
 import SetupView from './SetupView';
 import LogView from './LogView';
 import NavButton from './Controls/NavButton';
 import StateFab from './StateFAB';
-
-import type { ControlProps, NFCTagReactStateProps } from './ControlProps';
+import type { DataLayer } from './DataLayerTypes';
+import useDataLayer from './useDataLayer';
 
 enum Views {
   VIEW_SETUP,
   VIEW_LOG
 }
 
-const defaultProps: NFCTagReactStateProps = {
-  content: "",
-  type: NFCTagType4.stringFromContentType(NFCContentType.Text),
-  writable: false
-};
-
 const App: React.FC = (): JSX.Element => {
-  const [nfcTagProps, setNfcTagProps] = useState<NFCTagReactStateProps>(defaultProps);
-  const [logMsg, setLogMsg] = useState<Array<any>>([]);
   const [currentView, setCurrentView] = useState<Views>(Views.VIEW_SETUP);
-  const [session, setSession] = useState<HCESession | null>(null);
-  const listener = useRef<any>(null);
-
-  const terminateSession = useCallback(async () => {
-    if (!session) {
-      return;
-    }
-
-    await session.terminate();
-    setSession(null);
-  }, [session, setSession]);
-
-  const startSession = useCallback(async () => {
-    const tag = new NFCTagType4({
-      type: NFCTagType4.contentTypeFromString(nfcTagProps.type),
-      content: nfcTagProps.content,
-      writable: nfcTagProps.writable
-    });
-
-    const instance = await new HCESession(tag).start();
-
-    setSession(instance);
-  }, [setSession, nfcTagProps]);
-
-  const getExistingSession = useCallback(async () => {
-    const instance: (HCESession|null) = await HCESession.getExistingSession();
-
-    if (!instance) {
-      return;
-    }
-
-    setSession(instance);
-  }, [setSession]);
-
-  const updateProp = useCallback((prop: string, value: any) => {
-    setNfcTagProps((state: any) => ({...state, [prop]: value}));
-    void terminateSession();
-  }, [setNfcTagProps, terminateSession]);
-
-  const logger = useCallback((eventData) => {
-    setLogMsg(msg => ([...msg, {
-      time: (new Date()).toISOString(),
-      message: eventData
-    }]));
-  }, [setLogMsg]);
-
-  useEffect(() => {
-    void getExistingSession()
-  }, [getExistingSession]);
-
-  useEffect(() => {
-    if (session) {
-      listener.current = session.addListener('hceState', logger);
-
-      setNfcTagProps({
-        content: session.application.content.content,
-        type: NFCTagType4.stringFromContentType(session.application.content.type),
-        writable: session.application.content.writable
-      })
-    } else {
-      listener.current?.remove();
-    }
-  }, [session, logger, listener]);
-
-  const stateControlProps: ControlProps = {
-    nfcTagProps, updateProp,
-    session, startSession, terminateSession,
-    logMsg
-  }
+  const dataLayer: DataLayer = useDataLayer();
 
   return (
     <View style={styles.container}>
@@ -112,16 +36,21 @@ const App: React.FC = (): JSX.Element => {
       </View>
 
       <View style={styles.content}>
-        {currentView === Views.VIEW_SETUP && <SetupView {...stateControlProps} />}
-        {currentView === Views.VIEW_LOG && <LogView {...stateControlProps} />}
+        {dataLayer.loading && <Text>Loading...</Text>}
+        {currentView === Views.VIEW_SETUP && <SetupView {...dataLayer} />}
+        {currentView === Views.VIEW_LOG && <LogView {...dataLayer} />}
       </View>
 
-      <StateFab {...stateControlProps} />
+      <StateFab {...dataLayer} />
     </View>
   );
 }
 
-export default App;
+export default () => (
+  <HCESessionProvider>
+    <App />
+  </HCESessionProvider>
+);
 
 const styles = StyleSheet.create({
   container: {
