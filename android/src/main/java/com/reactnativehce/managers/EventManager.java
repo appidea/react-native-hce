@@ -8,39 +8,35 @@ package com.reactnativehce.managers;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Observer;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.reactnativehce.HceAndroidViewModel;
 
 import java.util.HashSet;
 
 public class EventManager {
+  public static final String TAG = "EventManager";
   private static EventManager instance = null;
   private final HashSet<String> observedEvents;
   private ReactApplicationContext context;
-  private HceAndroidViewModel model;
-  private String lastReportedState = null;
+  private HceViewModel model;
 
   public final static String EVENT_STATE = "hceState";
 
   final Observer<String> observer = new Observer<String>() {
     @Override
     public void onChanged(@Nullable final String lastState) {
-      assert lastState != null;
-
-      if (lastState.equals(lastReportedState) || ( lastReportedState == null && lastState.equals("DISCONNECTED") )) {
-        return;
+      try {
+        context
+          .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+          .emit(EVENT_STATE, lastState);
+      } catch (Exception e) {
+        Log.w(TAG, "There was a problem when attempting to send event to RN bridge: " + e.getMessage());
       }
-
-      lastReportedState = lastState;
-
-      context
-        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit(EVENT_STATE, lastState);
     }
   };
 
@@ -70,7 +66,7 @@ public class EventManager {
     observedEvents.add(eventName);
 
     if (this.model == null) {
-      this.model = HceAndroidViewModel.getInstance(context.getApplicationContext());
+      this.model = HceViewModel.getInstance(context.getApplicationContext());
     }
 
     new Handler(Looper.getMainLooper())

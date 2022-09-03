@@ -4,7 +4,7 @@
  * Licensed under the MIT license. See LICENSE file in the project root for details.
  */
 
-package com.reactnativehce;
+package com.reactnativehce.managers;
 
 import android.app.Application;
 import android.content.Context;
@@ -13,19 +13,28 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 
-public class HceAndroidViewModel extends AndroidViewModel {
+public class HceViewModel extends AndroidViewModel {
   private MutableLiveData<String> lastState;
-  private static HceAndroidViewModel instance = null;
+  private static HceViewModel instance = null;
 
-  public HceAndroidViewModel(@NonNull Application application) {
+  public static String HCE_STATE_CONNECTED = "connected";
+  public static String HCE_STATE_DISCONNECTED = "disconnected";
+  public static String HCE_STATE_ENABLED = "enabled";
+  public static String HCE_STATE_DISABLED = "disabled";
+  public static String HCE_STATE_READ = "read";
+  public static String HCE_STATE_WRITE_FULL = "writeFull";
+  public static String HCE_STATE_WRITE_PARTIAL = "writePartial";
+  public static String HCE_STATE_UPDATE_APPLICATION = "updateApplication";
+
+  public HceViewModel(@NonNull Application application) {
     super(application);
   }
 
-  public static HceAndroidViewModel getInstance(Context appContext) {
+  public static HceViewModel getInstance(Context appContext) {
     if (instance == null) {
       instance = ViewModelProvider.AndroidViewModelFactory.getInstance(
         (Application) appContext
-      ).create(HceAndroidViewModel.class);
+      ).create(HceViewModel.class);
     }
 
     return instance;

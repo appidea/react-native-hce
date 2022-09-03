@@ -26,7 +26,7 @@ export interface NFCTagType4Props {
   writable: boolean
 }
 
-class NFCTagType4 implements HCEApplication {
+export class NFCTagType4 implements HCEApplication {
   /**
    * Creates a new instance of NFCTagType4 containing an NDEF message.
    * @param props Props of the tag
@@ -61,5 +61,3 @@ class NFCTagType4 implements HCEApplication {
     }
   }
 }
-
-export default NFCTagType4;

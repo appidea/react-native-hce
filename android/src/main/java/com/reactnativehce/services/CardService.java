@@ -12,7 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.reactnativehce.utils.ApduHelper;
-import com.reactnativehce.HceAndroidViewModel;
+import com.reactnativehce.managers.HceViewModel;
 import com.reactnativehce.IHCEApplication;
 import com.reactnativehce.managers.PrefManager;
 import com.reactnativehce.apps.nfc.NFCTagType4;
@@ -50,7 +50,7 @@ public class CardService extends HostApduService {
 
       registeredHCEApplications.add(new NFCTagType4(
         PrefManager.getInstance(context),
-        HceAndroidViewModel.getInstance(context)
+        HceViewModel.getInstance(context)
       ));
     }
 

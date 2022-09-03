@@ -8,7 +8,6 @@ package com.reactnativehce;
 
 import android.content.ComponentName;
 import android.content.pm.PackageManager;
-import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -18,21 +17,27 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.reactnativehce.managers.EventManager;
+import com.reactnativehce.managers.HceViewModel;
 import com.reactnativehce.managers.PrefManager;
 import com.reactnativehce.services.CardService;
 
 import androidx.annotation.NonNull;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class HceModule extends ReactContextBaseJavaModule {
   private static ReactApplicationContext reactContext;
-  private final EventManager listenerFactory;
+  private final EventManager eventManager;
   private final PrefManager prefManager;
+  private final HceViewModel hceModel;
 
   HceModule(ReactApplicationContext context) {
     super(context);
     reactContext = context;
-    listenerFactory = EventManager.getInstance(context);
+    eventManager = EventManager.getInstance(context);
     prefManager = PrefManager.getInstance(context.getApplicationContext());
+    hceModel = HceViewModel.getInstance(context.getApplicationContext());
 
     if (prefManager.exists()) {
       this.enableHceService(prefManager.getEnabled());
@@ -45,6 +50,20 @@ public class HceModule extends ReactContextBaseJavaModule {
     return "Hce";
   }
 
+  @Override
+  public Map<String, Object> getConstants() {
+    final Map<String, Object> constants = new HashMap<>();
+    constants.put("HCE_STATE_CONNECTED", HceViewModel.HCE_STATE_CONNECTED);
+    constants.put("HCE_STATE_DISCONNECTED", HceViewModel.HCE_STATE_DISCONNECTED);
+    constants.put("HCE_STATE_ENABLED", HceViewModel.HCE_STATE_ENABLED);
+    constants.put("HCE_STATE_DISABLED", HceViewModel.HCE_STATE_DISABLED);
+    constants.put("HCE_STATE_READ", HceViewModel.HCE_STATE_READ);
+    constants.put("HCE_STATE_WRITE_FULL", HceViewModel.HCE_STATE_WRITE_FULL);
+    constants.put("HCE_STATE_WRITE_PARTIAL", HceViewModel.HCE_STATE_WRITE_PARTIAL);
+    constants.put("HCE_STATE_UPDATE_APPLICATION", HceViewModel.HCE_STATE_UPDATE_APPLICATION);
+    return constants;
+  }
+
   @ReactMethod
   @SuppressWarnings("unused")
   public void addListener(String eventName) throws Exception {
@@ -52,13 +71,13 @@ public class HceModule extends ReactContextBaseJavaModule {
       throw new Exception("Event not supported: " + eventName);
     }
 
-    this.listenerFactory.addListener(EventManager.EVENT_STATE);
+    this.eventManager.addListener(EventManager.EVENT_STATE);
   }
 
   @ReactMethod
   @SuppressWarnings("unused")
   public void removeListeners(Integer count) {
-    this.listenerFactory.clear();
+    this.eventManager.clear();
   }
 
   @ReactMethod
@@ -67,6 +86,8 @@ public class HceModule extends ReactContextBaseJavaModule {
     prefManager.setType(properties.getString("type"));
     prefManager.setContent(properties.getString("content"));
     prefManager.setWritable(properties.getBoolean("writable"));
+    this.hceModel.getLastState()
+      .postValue(HceViewModel.HCE_STATE_UPDATE_APPLICATION);
 
     promise.resolve(null);
   }
@@ -94,6 +115,9 @@ public class HceModule extends ReactContextBaseJavaModule {
         enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
         PackageManager.DONT_KILL_APP
       );
+
+    this.hceModel.getLastState()
+      .postValue(enabled ? HceViewModel.HCE_STATE_ENABLED : HceViewModel.HCE_STATE_DISABLED);
   }
 
   @ReactMethod

@@ -9,7 +9,7 @@ package com.reactnativehce.apps.nfc;
 import android.util.Log;
 
 import com.reactnativehce.utils.ApduHelper;
-import com.reactnativehce.HceAndroidViewModel;
+import com.reactnativehce.managers.HceViewModel;
 import com.reactnativehce.managers.PrefManager;
 import com.reactnativehce.utils.BinaryUtils;
 import com.reactnativehce.IHCEApplication;
@@ -23,7 +23,7 @@ public class NFCTagType4 implements IHCEApplication {
   private static final byte[] FILENAME_NDEF = BinaryUtils.HexStringToByteArray("E104");
   private static final byte[] CC_HEADER = BinaryUtils.HexStringToByteArray("001120FFFFFFFF");
   private final PrefManager prefManager;
-  private final HceAndroidViewModel hceModel;
+  private final HceViewModel hceModel;
 
   private SelectedFile selectedFile = null;
   public final byte[] ndefDataBuffer = new byte[0xFFFE];
@@ -34,7 +34,7 @@ public class NFCTagType4 implements IHCEApplication {
     FILENAME_NDEF
   }
 
-  public NFCTagType4(PrefManager prefManager, HceAndroidViewModel model) {
+  public NFCTagType4(PrefManager prefManager, HceViewModel model) {
     this.prefManager = prefManager;
     this.hceModel = model;
 
@@ -68,7 +68,7 @@ public class NFCTagType4 implements IHCEApplication {
     Boolean result = ApduHelper.commandByRangeEquals(command, 0, 13, C_APDU_SELECT);
 
     if (result) {
-      this.hceModel.getLastState().setValue("NFC");
+      this.hceModel.getLastState().setValue(HceViewModel.HCE_STATE_CONNECTED);
     }
 
     return result;
@@ -107,6 +107,9 @@ public class NFCTagType4 implements IHCEApplication {
     System.arraycopy(slicedResponse, 0, response, 0, realLength);
     System.arraycopy(ApduHelper.R_APDU_OK, 0, response, realLength, ApduHelper.R_APDU_OK.length);
 
+    this.hceModel.getLastState()
+      .setValue(HceViewModel.HCE_STATE_READ);
+
     return response;
   }
 
@@ -139,9 +142,13 @@ public class NFCTagType4 implements IHCEApplication {
     if (nm != null) {
       this.prefManager.setContent(nm.getContent());
       this.prefManager.setType(nm.getType());
-      this.hceModel.getLastState().setValue("WRITE_FULL");
+      this.hceModel.getLastState()
+        .setValue(HceViewModel.HCE_STATE_WRITE_FULL);
+      this.hceModel.getLastState()
+        .setValue(HceViewModel.HCE_STATE_UPDATE_APPLICATION);
     } else {
-      this.hceModel.getLastState().setValue("WRITE_PARTIAL");
+      this.hceModel.getLastState()
+        .setValue(HceViewModel.HCE_STATE_WRITE_PARTIAL);
     }
 
     return ApduHelper.R_APDU_OK;
@@ -167,6 +174,7 @@ public class NFCTagType4 implements IHCEApplication {
 
   @Override
   public void onDestroy(int reason) {
-    this.hceModel.getLastState().setValue("DISCONNECTED");
+    this.hceModel.getLastState()
+      .setValue(HceViewModel.HCE_STATE_DISCONNECTED);
   }
 }
