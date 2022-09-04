@@ -23,5 +23,9 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext"
+  },
+  "typedocOptions": {
+    "entryPoints": ["src/index.ts"],
+    "out": "docs"
   }
 }
