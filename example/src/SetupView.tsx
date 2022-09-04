@@ -7,7 +7,7 @@
 import React from 'react';
 import { Image, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { NFCContentType, NFCTagType4 } from 'react-native-hce';
+import { NFCTagType4NDEFContentType, NFCTagType4 } from 'react-native-hce';
 import FormRow from './Controls/FormRow';
 import type { DataLayer } from './DataLayerTypes';
 
@@ -34,12 +34,12 @@ const App = ({ nfcTagProps, updateProp }: DataLayer) => (
         <HCEPickerItem
           label="Text"
           key={1}
-          value={NFCTagType4.stringFromContentType(NFCContentType.Text)}
+          value={NFCTagType4.stringFromContentType(NFCTagType4NDEFContentType.Text)}
         />
         <HCEPickerItem
           label="URL"
           key={2}
-          value={NFCTagType4.stringFromContentType(NFCContentType.URL)}
+          value={NFCTagType4.stringFromContentType(NFCTagType4NDEFContentType.URL)}
         />
       </HCEPicker>
     </FormRow>

@@ -19,44 +19,99 @@ const checkPlatform = (): void => {
   }
 };
 
-interface HCESessionEvents {
+/**
+ * This interface defines a HCESession constants container object describing a state changes in the emulation.
+ * The object itself can be accessed in ``HCESession.Events`` static property.
+ *
+ * @enum
+ */
+export interface HCESessionEvents {
+  /** When HCE transaction is routed to the application. */
   HCE_STATE_CONNECTED: string;
+  /** When HCE transaction is terminated */
   HCE_STATE_DISCONNECTED: string;
+  /** When HCE service has been made available to the OS */
   HCE_STATE_ENABLED: string;
+  /** When HCE service has been made unavailable to the OS */
   HCE_STATE_DISABLED: string;
+  /** When a NFC Tag has been read by the reader */
   HCE_STATE_READ: string;
+  /** When a NFC Tag has been written and contains a valid NDEF record */
   HCE_STATE_WRITE_FULL: string;
+  /** When a NFC Tag writing is in progress but it's not yet correctly finalized (does not contain valid NDEF record yet). */
   HCE_STATE_WRITE_PARTIAL: string;
+  /** When a NFC Tag NDEF record has been changed, due to write or just request of content change in the library. */
   HCE_STATE_UPDATE_APPLICATION: string;
 }
 
+/**
+ * The HCESession listener. Parameter for {@link HCESession.on} method.
+ */
+export type HCESessionEventListener = () => void;
+
+/**
+ * The HCESession listener cancellation method. Used as a return valu of {@link HCESession.on} method.
+ */
+export type HCESessionEventListenerCancel = () => void;
+
+/**
+ * @internal
+ */
+interface HCESessionListenerDescription {
+  event: string;
+  listener: HCESessionEventListener;
+}
+
+/**
+ * Class for the session state management.
+ *
+ * HCESession is an entry point for the react-native-hce library.
+ * This class manages the entire connection with native counterparts managing the HCE emulation.
+ *
+ * __You should use only one instance__ of the class should be used per application. That's why we created it with the intention
+ * of use as a singleton. __To get the instance, use the {@link getInstance} static method__ that will get a current instance and will do the synchronization with native for You.
+ */
 export class HCESession {
   /**
-   * Keeps the internal instance of HCE application
+   * The current subject application to emulate in HCE.
    *
-   * @internal
+   * __NOTE__: Do not set the current application by assigning to this property.
+   * Use the {@link setApplication} instead.
    */
   application: HCEApplication | null;
 
   /**
-   * Indication, if the session is still active.
+   * Is the HCE Service currently enabled and visible to OS.
+   *
+   * __NOTE__: Do not set the current state by assigning to this property.
+   * Use the {@link setEnabled} instead.
    */
   enabled: boolean;
 
   /**
-   * Container for event listeners.
+   * Container for class' event listeners.
    *
    * @internal
+   * @private
    */
-  stateListeners: any[];
+  stateListeners: (HCESessionListenerDescription | null)[];
 
+  /**
+   * Object that contains the events that the application can listen to using ``HCESession.on(...)``.
+   *
+   * Check the {@link HCESessionEvents} interface to get the listing of availble events.
+   *
+   * @example Usage of the property in event listener:
+   * ```
+   * hceSession.on(HCESession.Events.HCE_CONNECTED)
+   * ```
+   */
   static Events: HCESessionEvents = NativeHce.getConstants();
 
   /**
-   * Constructs the HCE Session class.
+   * Creates the instance of HCE Session class.
    *
-   * __NOTE__: Do not use the constructor directly. Use static "getInstance" to
-   * get the already-present instance, if exists.
+   * __NOTE!!!: Do not use this constructor directly. Use {@link getInstance} to get the appropriate and synchronized instance.__
    */
   constructor() {
     this.enabled = false;
@@ -64,20 +119,6 @@ export class HCESession {
     this.stateListeners = [];
 
     this.addListener('hceState', this.handleStateUpdate.bind(this));
-  }
-
-  async handleStateUpdate(incomingEvent: string) {
-    if (incomingEvent === HCESession.Events.HCE_STATE_WRITE_FULL) {
-      await this.syncApplication();
-    }
-
-    this.stateListeners
-      .filter((i) => i !== null)
-      .forEach(({ event, listener }) => {
-        if (incomingEvent === event) {
-          listener();
-        }
-      });
   }
 
   /**
@@ -99,10 +140,54 @@ export class HCESession {
     return instance;
   }
 
-  on(event: string, listener: () => void) {
+  /**
+   * Internal method for synchronization with native module.
+   *
+   * @internal
+   * @private
+   * @param incomingEvent Native module event parameter
+   */
+  async handleStateUpdate(incomingEvent: string) {
+    if (incomingEvent === HCESession.Events.HCE_STATE_WRITE_FULL) {
+      await this.syncApplication();
+    }
+
+    this.stateListeners
+      .filter((i): i is HCESessionListenerDescription => i !== null)
+      .forEach(({ event, listener }) => {
+        if (incomingEvent === event) {
+          listener();
+        }
+      });
+  }
+
+  /**
+   * Adds event listener to the HCE Session.
+   *
+   * @param event The event that application should listen to. You should pass the constant from static {@link HCESession.Events} property.
+   * @param listener The event listener.
+   * @return Returns the reference to "stop listening" method. To stop listening the event, just call it.
+   *
+   * @example
+   * ```
+   * import { ToastAndroid } from "react-native"
+   * import { HCESession } from "react-native-hce"
+   * ...
+   * const instance = await HCESession.getInstance();
+   * const removeListener = instance.on(HCESession.Events.HCE_STATE_READ, () => {
+   *   ToastAndroid.show("The tag has been read! Thank You.", ToastAndroid.LONG);
+   *   removeListener();
+   * };
+   * ```
+   */
+  on(
+    event: string,
+    listener: HCESessionEventListener
+  ): HCESessionEventListenerCancel {
     const index = this.stateListeners.push({ event, listener });
-    // eslint-disable-next-line no-return-assign
-    return () => (this.stateListeners[index] = null);
+    return () => {
+      this.stateListeners[index] = null;
+    };
   }
 
   /**
@@ -117,12 +202,10 @@ export class HCESession {
   };
 
   /**
-   * Executes the synchronization of state with native module.
+   * Synchronize the class with current native state.
    *
-   * You should not use this function normally. The internal implementation mechanisms will
-   * execute it if needed.
-   *
-   * @internal
+   * __NOTE__: You should not use this function normally.
+   * Internal implementation will call it for You, if needed.
    */
   async syncApplication(): Promise<void> {
     const content = await NativeHce.getContent();
@@ -143,9 +226,10 @@ export class HCESession {
   }
 
   /**
-   * Update application that is a subject of session.
+   * Update the subject application to emulate in HCE.
    *
-   * If the session has been already started, then it will be terminated.
+   * If the the visibility of HCE service has been previously enabled (see {@link setEnabled}),
+   * this function will additionally switch the visibility off.
    *
    * @param application The application to set, must be instance of HCEApplication.
    */
@@ -160,19 +244,15 @@ export class HCESession {
   }
 
   /**
-   * Get current instance of application present in HCESession.
-   */
-  getApplication(): HCEApplication | null {
-    return this.application;
-  }
-
-  /**
    * Toggle the state of HCE service.
    *
-   * Switch the visibility of HCE background service, If You will enable,
-   * then the service will be visible to OS and thus to the card reader.
+   * This function allows to enable or disable the native component of HCE Service.
+   * If enabled, the native HostApduService will be recognizable by platform's HCE router.
+   * If not, service won't be recognized, thus all the interactions between HCE and reader won't be available.
    *
-   * NOTE: You should first set the application object using `setApplication` method to switch on.
+   * __NOTE:__ Before switching the service on, use the {@link setApplication}
+   * first to register the content that You want to emulate using HCE.
+   *
    *
    * @param enable True to enable the service, false to disable.
    */

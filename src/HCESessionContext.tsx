@@ -7,15 +7,40 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { HCESession } from './HCESession';
 
-interface HCEReactContextProps {
+/**
+ * Interface to specify the value of {@link HCESessionContext}.
+ *
+ * The only one element is a {@link HCESession} class.
+ *
+ * @group React
+ */
+export interface HCEReactContextValue {
   session: HCESession;
 }
 
-export const HCESessionContext = createContext<HCEReactContextProps>({
+/**
+ * {@link https://reactjs.org/docs/context.html React Context} wrapper for {@link HCESession} class.
+ *
+ * Use in couple with {@link HCESessionProvider}
+ *
+ * @group React
+ */
+export const HCESessionContext = createContext<HCEReactContextValue>({
   session: new HCESession(),
 });
 
-export const HCESessionProvider: React.FC = (props) => {
+/**
+ * {@link https://reactjs.org/docs/context.html React Context} wrapper for {@link HCESession} class - provider.
+ *
+ * Use it to provide the singleton instance of {@link HCESession}
+ * to React application instead of calling {@link HCESession.getInstance} manually.
+ * The provider will not render the children until the HCESession class will not be
+ * properly picked or created.
+ *
+ * @group React
+ * @constructor
+ */
+export const HCESessionProvider: React.FC = () => {
   const [session, setSession] = useState<HCESession>();
 
   useEffect(() => {
@@ -30,5 +55,5 @@ export const HCESessionProvider: React.FC = (props) => {
     return null;
   }
 
-  return <HCESessionContext.Provider value={{ session }} {...props} />;
+  return <HCESessionContext.Provider value={{ session }} />;
 };

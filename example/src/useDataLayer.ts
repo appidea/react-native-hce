@@ -8,7 +8,7 @@ import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   HCESessionContext,
   HCESession,
-  NFCContentType,
+  NFCTagType4NDEFContentType,
   NFCTagType4,
 } from 'react-native-hce';
 import type {
@@ -19,7 +19,7 @@ import type {
 
 const defaultProps: NFCTagReactStateProps = {
   content: '',
-  type: NFCTagType4.stringFromContentType(NFCContentType.Text),
+  type: NFCTagType4.stringFromContentType(NFCTagType4NDEFContentType.Text),
   writable: false,
   _pristine: true,
 };
@@ -98,7 +98,7 @@ const useDataLayer = (): DataLayer => {
   // ** Following section of code is responsible for: **
   // Synchronize the states: LIBRARY ---> APPLICATION.
   const updateApp = useCallback(() => {
-    const application = session.getApplication();
+    const application = session.application;
 
     if (application === null) {
       return;
