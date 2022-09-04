@@ -5,7 +5,7 @@
  */
 
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
-import type HCEApplication from './HCEApplication';
+import type { HCEApplication } from './HCEApplication';
 import { NFCTagType4 } from './NFCTagType4';
 
 const { Hce: NativeHce } = NativeModules;
