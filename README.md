@@ -26,6 +26,28 @@ For now, the only out-of-the-box solution provided by this package is:
 
 anyways, the module's architecture is ready to engage also the new, other usages.
 
+## Architectural overview
+
+Core part of the library (on the native side) is a Service which implements [``HostApduService``](https://developer.android.com/reference/android/nfc/cardemulation/HostApduService) Android interface.
+The key difference between usual Android services and ``HostApduService`` is the initializer entity.
+``HostApduService`` is initiated by OS - when phone taps the NFC reader. Thus, the Service (and - in the big
+picture - the entire library) has been prepared to the case, when the React
+Activity is in the background or even not available at the time in time of card data transfer.
+
+Because of this special behavior of ``HostApduService``, we have chosen
+the _"declarativeness over interactivity"_ approach in the architecture design.
+To make the transactions stable and reliable, library stores the state
+on the Native side (in Android, the data are stored in ``SharedPreferences``). The application can specify
+the available data in advance, to store it to native memory right away and
+pass it efficiently to the Service, if needed. Also, the Service can pass the data to a storage
+without considering the presence of JS thread. React app can grab the saved data later on.
+
+Of course, all of this synchronization operations are handled in the React part of the library,
+so the end user can control the entire HCE session with convenient abstraction - the ``HCEService`` class.
+The library also provides the convenient wrapper that binds the HCEService with React application lifecycle using the
+"Contexts" feature of React.js.
+
+
 ## Important notes
 
 - Currenlty supported **only on the Android platform**, as there is no official support for HCE in Apple platform.
@@ -83,9 +105,12 @@ Open the app's manifest (``<projectRoot>/android/app/src/main/AndroidManifest.xm
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- add this: -->
+    <!-- add the following two nodes: -->
     <uses-permission android:name="android.permission.NFC" />
     <uses-feature android:name="android.hardware.nfc.hce" android:required="true" />
+    ...
+
+</manifest>
 ```
 
 - HCE emulation on the Android platform works as a service. ``react-native-hce`` module communicating with this service, so that's why we need to place the reference in AndroidManifest.
@@ -131,7 +156,6 @@ You can find the generated documentation on the [project's website](https://reac
 ### Example application
 
 You can try out the [example react-native app](example), which presents the usage of this package in practice. The instructions regarding starting up the example application are provided in [Contribution guide](CONTRIBUTING.md).
-
 
 ### NFC Type 4 tag emulation feature
 
