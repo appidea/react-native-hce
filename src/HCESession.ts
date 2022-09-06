@@ -58,7 +58,7 @@ export type HCESessionEventListenerCancel = () => void;
  * @internal
  */
 interface HCESessionListenerDescription {
-  event: string;
+  event: string | null;
   listener: HCESessionEventListener;
 }
 
@@ -155,7 +155,7 @@ export class HCESession {
     this.stateListeners
       .filter((i): i is HCESessionListenerDescription => i !== null)
       .forEach(({ event, listener }) => {
-        if (incomingEvent === event) {
+        if (event === null || event === incomingEvent) {
           listener();
         }
       });
@@ -165,6 +165,7 @@ export class HCESession {
    * Adds event listener to the HCE Session.
    *
    * @param event The event that application should listen to. You should pass the constant from static {@link HCESession.Events} property.
+   * If null, the listener will respond to all events - that can be usable for logging purposes.
    * @param listener The event listener.
    * @return Returns the reference to "stop listening" method. To stop listening the event, just call it.
    *
@@ -181,7 +182,7 @@ export class HCESession {
    * ```
    */
   on(
-    event: string,
+    event: string | null,
     listener: HCESessionEventListener
   ): HCESessionEventListenerCancel {
     const index = this.stateListeners.push({ event, listener });
@@ -228,17 +229,9 @@ export class HCESession {
   /**
    * Update the subject application to emulate in HCE.
    *
-   * If the the visibility of HCE service has been previously enabled (see {@link setEnabled}),
-   * this function will additionally switch the visibility off.
-   *
    * @param application The application to set, must be instance of HCEApplication.
    */
   async setApplication(application: HCEApplication): Promise<void> {
-    if (this.enabled) {
-      await NativeHce.setEnabled(false);
-      this.enabled = false;
-    }
-
     await NativeHce.setContent(application.content);
     this.application = application;
   }
@@ -252,7 +245,6 @@ export class HCESession {
    *
    * __NOTE:__ Before switching the service on, use the {@link setApplication}
    * first to register the content that You want to emulate using HCE.
-   *
    *
    * @param enable True to enable the service, false to disable.
    */

@@ -67,7 +67,7 @@ const useDataLayer = (): DataLayer => {
   );
 
   // ** Following section of code is responsible for: **
-  // Synchronize the states: APPLICATION ---> LIBRARY.
+  // Synchronization of state: APPLICATION ---> LIBRARY.
   const timeout = useRef<ReturnType<typeof setTimeout>>();
 
   const updateTag = useCallback(
@@ -96,7 +96,7 @@ const useDataLayer = (): DataLayer => {
   }, [nfcTagProps, updateTag]);
 
   // ** Following section of code is responsible for: **
-  // Synchronize the states: LIBRARY ---> APPLICATION.
+  // Synchronization of state: LIBRARY ---> APPLICATION.
   const updateApp = useCallback(() => {
     const application = session.application;
 
@@ -115,19 +115,17 @@ const useDataLayer = (): DataLayer => {
   }, [session, setNfcTagProps, setEnabled]);
 
   useEffect(() => {
-    const listener = session.on(
+    const cancelSubscription = session.on(
       HCESession.Events.HCE_STATE_WRITE_FULL,
       updateApp
     );
     updateApp();
 
-    return () => {
-      listener();
-    };
+    return () => cancelSubscription();
   }, [session, setNfcTagProps, setEnabled, updateApp]);
 
   // ** Following section of code is responsible for: **
-  // Log events to preview in "Events" pane.
+  // Logging the events to preview in "Events" pane.
   const [log, setLog] = useState<Array<LogEntry>>([]);
 
   const logger = useCallback(
@@ -138,12 +136,12 @@ const useDataLayer = (): DataLayer => {
   );
 
   useEffect(() => {
-    const listener = session.addListener('hceState', logger);
-    return () => listener.remove();
+    const cancelSubscription = session.on(null, logger);
+    return () => cancelSubscription();
   }, [session, logger]);
 
   // ** Following section of code is responsible for: **
-  // Return the hook result.
+  // Returning the hook result.
   return { nfcTagProps, updateProp, switchSession, log, enabled, loading };
 };
 

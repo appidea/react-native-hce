@@ -34,12 +34,16 @@ const App = ({ nfcTagProps, updateProp }: DataLayer) => (
         <HCEPickerItem
           label="Text"
           key={1}
-          value={NFCTagType4.stringFromContentType(NFCTagType4NDEFContentType.Text)}
+          value={NFCTagType4.stringFromContentType(
+            NFCTagType4NDEFContentType.Text
+          )}
         />
         <HCEPickerItem
           label="URL"
           key={2}
-          value={NFCTagType4.stringFromContentType(NFCTagType4NDEFContentType.URL)}
+          value={NFCTagType4.stringFromContentType(
+            NFCTagType4NDEFContentType.URL
+          )}
         />
       </HCEPicker>
     </FormRow>
