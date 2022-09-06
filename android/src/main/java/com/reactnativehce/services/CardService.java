@@ -1,62 +1,62 @@
+/*
+ * Copyright (c) 2020-2022 Mateusz Falkowski (appidea.pl) and contributors. All rights reserved.
+ * This file is part of "react-native-hce" library: https://github.com/appidea/react-native-hce
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ */
+
 package com.reactnativehce.services;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.nfc.cardemulation.HostApduService;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.reactnativehce.utils.ApduHelper;
+import com.reactnativehce.managers.HceViewModel;
 import com.reactnativehce.IHCEApplication;
+import com.reactnativehce.managers.PrefManager;
 import com.reactnativehce.apps.nfc.NFCTagType4;
-import com.reactnativehce.utils.BinaryUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class CardService extends HostApduService {
     private static final String TAG = "CardService";
-    private static byte[] SELECT_APDU_HEADER = BinaryUtils.HexStringToByteArray("00A40400");
-    private static final byte[] CMD_OK = BinaryUtils.HexStringToByteArray("9000");
-    private static final byte[] CMD_ERROR = BinaryUtils.HexStringToByteArray("6A82");
 
-    private ArrayList<IHCEApplication> registeredHCEApplications = new ArrayList<IHCEApplication>();
+    private final ArrayList<IHCEApplication> registeredHCEApplications = new ArrayList<>();
     private IHCEApplication currentHCEApplication = null;
 
     @Override
-    public byte[] processCommandApdu(byte[] commandApdu, Bundle extras) {
+    public byte[] processCommandApdu(byte[] command, Bundle extras) {
       if (currentHCEApplication != null) {
-        return currentHCEApplication.processCommand(commandApdu);
+        return currentHCEApplication.processCommand(command);
       }
 
-      byte[] header = Arrays.copyOfRange(commandApdu, 0, 4);
-
-      if (Arrays.equals(SELECT_APDU_HEADER, header)) {
+      if (ApduHelper.commandByRangeEquals(command, 0, 4, ApduHelper.C_APDU_SELECT_APP)) {
         for (IHCEApplication app : registeredHCEApplications) {
-          if (app.assertSelectCommand(commandApdu)) {
+          if (app.assertSelectCommand(command)) {
             currentHCEApplication = app;
-            return CMD_OK;
+            return ApduHelper.R_APDU_OK;
           }
         }
       }
 
-      return CMD_ERROR;
+      return ApduHelper.R_APDU_ERROR;
     }
 
     @Override
     public void onCreate() {
       Log.d(TAG, "Starting service");
+      Context context = getApplicationContext();
 
-      SharedPreferences prefs = getApplicationContext()
-        .getSharedPreferences("hce", Context.MODE_PRIVATE);
-
-      String type = prefs.getString("type", "text");
-      String content = prefs.getString("content", "No text provided");
-
-      registeredHCEApplications.add(new NFCTagType4(type, content));
+      registeredHCEApplications.add(new NFCTagType4(
+        PrefManager.getInstance(context),
+        HceViewModel.getInstance(context)
+      ));
     }
 
     @Override
     public void onDeactivated(int reason) {
       Log.d(TAG, "Finishing service: " + reason);
+      this.currentHCEApplication.onDestroy(reason);
     }
 }

@@ -7,6 +7,15 @@ module.exports = {
     [
       'module-resolver',
       {
+        extensions: [
+          '.js',
+          '.ts',
+          '.ios.js',
+          '.ios.ts',
+          '.android.js',
+          '.android.ts',
+          '.json',
+        ],
         alias: {
           [pak.name]: path.join(__dirname, '..', pak.source),
         },

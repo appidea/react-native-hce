@@ -1,95 +1,73 @@
-import React, { useCallback, useState, useRef } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import HCESession, { NFCContentType, NFCTagType4 } from 'react-native-hce';
+/*
+ * Copyright (c) 2020-2022 Mateusz Falkowski (appidea.pl) and contributors. All rights reserved.
+ * This file is part of "react-native-hce" library: https://github.com/appidea/react-native-hce
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ */
 
-export default function App() {
-  const [content, setContent] = useState<string>('');
-  const [contentType, setContentType] = useState<NFCContentType>(
-    NFCContentType.Text
-  );
+import React, { useState } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
+import { HCESessionProvider } from 'react-native-hce';
+import SetupView from './SetupView';
+import LogView from './LogView';
+import NavButton from './Controls/NavButton';
+import StateFab from './StateFAB';
+import type { DataLayer } from './DataLayerTypes';
+import useDataLayer from './useDataLayer';
 
-  const simulationInstance = useRef<HCESession | undefined>();
-  const [simulationEnabled, setSimulationEnabled] = useState<boolean>(false);
+enum Views {
+  VIEW_SETUP,
+  VIEW_LOG,
+}
 
-  const terminateSimulation = useCallback(async () => {
-    const instance = simulationInstance.current;
-
-    if (!instance) {
-      return;
-    }
-
-    await instance.terminate();
-    setSimulationEnabled(instance.active);
-  }, [setSimulationEnabled, simulationInstance]);
-
-  const startSimulation = useCallback(async () => {
-    const tag = new NFCTagType4(contentType, content);
-    simulationInstance.current = await new HCESession(tag).start();
-    setSimulationEnabled(simulationInstance.current.active);
-  }, [setSimulationEnabled, simulationInstance, content, contentType]);
-
-  const selectNFCType = useCallback(
-    (type) => {
-      setContentType(type);
-      console.log(type);
-      void terminateSimulation();
-    },
-    [setContentType, terminateSimulation]
-  );
-
-  const selectNFCContent = useCallback(
-    (text) => {
-      setContent(text);
-      void terminateSimulation();
-    },
-    [setContent, terminateSimulation]
-  );
+const App: React.FC = (): JSX.Element => {
+  const [currentView, setCurrentView] = useState<Views>(Views.VIEW_SETUP);
+  const dataLayer: DataLayer = useDataLayer();
 
   return (
     <View style={styles.container}>
-      <Text>Welcome to the HCE NFC Tag example.</Text>
-
-      <View style={{ flexDirection: 'row' }}>
-        <Button
-          title="Text content"
-          onPress={() => selectNFCType(NFCContentType.Text)}
-          disabled={contentType === NFCContentType.Text}
+      <View style={styles.navigation}>
+        <NavButton
+          title="Set Up"
+          onPress={() => setCurrentView(Views.VIEW_SETUP)}
+          active={currentView === Views.VIEW_SETUP}
         />
 
-        <Button
-          title="URL content"
-          onPress={() => selectNFCType(NFCContentType.URL)}
-          disabled={contentType === NFCContentType.URL}
+        <NavButton
+          title="Event Log"
+          onPress={() => setCurrentView(Views.VIEW_LOG)}
+          active={currentView === Views.VIEW_LOG}
         />
       </View>
 
-      <TextInput
-        onChangeText={(text) => selectNFCContent(text)}
-        value={content}
-        placeholder="Enter the content here."
-      />
-
-      <View style={{ flexDirection: 'row' }}>
-        {!simulationEnabled ? (
-          <Button
-            title="Start hosting the tag"
-            onPress={() => startSimulation()}
-          />
-        ) : (
-          <Button
-            title="Stop hosting the tag"
-            onPress={() => terminateSimulation()}
-          />
-        )}
+      <View style={styles.content}>
+        {dataLayer.loading && <Text>Loading...</Text>}
+        {currentView === Views.VIEW_SETUP && <SetupView {...dataLayer} />}
+        {currentView === Views.VIEW_LOG && <LogView {...dataLayer} />}
       </View>
+
+      <StateFab {...dataLayer} />
     </View>
   );
-}
+};
+
+export default () => (
+  <HCESessionProvider>
+    <App />
+  </HCESessionProvider>
+);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  navigation: {
+    flexDirection: 'row',
+    margin: 10,
+  },
+  content: {
+    flex: 1,
+    width: '100%',
   },
 });

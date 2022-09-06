@@ -1,78 +1,77 @@
+/*
+ * Copyright (c) 2020-2022 Mateusz Falkowski (appidea.pl) and contributors. All rights reserved.
+ * This file is part of "react-native-hce" library: https://github.com/appidea/react-native-hce
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ */
+
 package com.reactnativehce.apps.nfc;
 
+import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
-import android.util.Log;
+
 import java.math.BigInteger;
-import java.nio.charset.Charset;
-import com.reactnativehce.utils.BinaryUtils;
+import java.util.Arrays;
+
+import com.reactnativehce.utils.ByteArrayOperations;
 
 public class NdefEntity {
-  public byte[] byteArray;
-  public byte[] lengthArray;
-
-  public static String TAG = "NdefEntity";
+  private final NdefMessage message;
+  private final String type;
+  private final String content;
 
   public NdefEntity(String type, String content) {
+    this.type = type;
+    this.content = content;
+
     NdefRecord record;
 
     if (type.equals("text")) {
-      record = createTextRecord("en", content);
+      record = NdefRecord.createTextRecord("en", content);
     } else if (type.equals("url")) {
-      record = createUrlRecord(content);
+      record = NdefRecord.createUri(content);
     } else {
       throw new IllegalArgumentException("Wrong NFC tag content type");
     }
 
-    byteArray = record.toByteArray();
-    lengthArray = fillByteArrayToFixedDimension(
-      BigInteger.valueOf(Long.valueOf(byteArray.length)).toByteArray(),
+    this.message = new NdefMessage(record);
+  }
+
+  public String getType() {
+    return this.type;
+  }
+
+  public String getContent() {
+    return this.content;
+  }
+
+  public byte[] getNdefContent() {
+    byte[] payload = this.message.toByteArray();
+    byte[] messageLength = ByteArrayOperations.fillByteArrayToFixedDimension(
+      BigInteger.valueOf(this.message.getByteArrayLength()).toByteArray(),
       2
     );
+
+    byte[] fullResponse = new byte[messageLength.length + payload.length];
+    System.arraycopy(messageLength, 0, fullResponse, 0, messageLength.length);
+    System.arraycopy(payload,0, fullResponse, messageLength.length, payload.length);
+
+    return fullResponse;
   }
 
-  public static byte[] fillByteArrayToFixedDimension(byte[] array, int fixedSize) {
-    if (array.length == fixedSize) {
-      return array;
+  public static NdefEntity fromBytes(byte[] bytes) throws Exception {
+    NdefMessage message = new NdefMessage(bytes);
+    NdefRecord record = message.getRecords()[0];
+
+    byte[] payload = record.getPayload();
+
+    if (record.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(record.getType(), NdefRecord.RTD_TEXT)) {
+      String content = new String(Arrays.copyOfRange(payload, 3, payload.length));
+      return new NdefEntity("text", content);
+    } else if (record.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(record.getType(), NdefRecord.RTD_URI)) {
+      String content = record.toUri().toString();
+      return new NdefEntity("url", content);
     }
 
-    byte[] start = BinaryUtils.HexStringToByteArray("00");
-    byte[] filledArray = new byte[start.length + array.length];
-    System.arraycopy(start, 0, filledArray, 0, start.length);
-    System.arraycopy(array, 0, filledArray, start.length, array.length);
-    return fillByteArrayToFixedDimension(filledArray, fixedSize);
-  }
-
-  public static NdefRecord createTextRecord(String language, String text) {
-    byte[] languageBytes;
-    byte[] textBytes;
-
-    languageBytes = language.getBytes(Charset.forName("US-ASCII"));
-    textBytes = text.getBytes(Charset.forName("UTF-8"));
-
-    byte[] recordPayload = new byte[1 + (languageBytes.length & 0x03F) + textBytes.length];
-
-    Integer zeroVal = languageBytes.length & 0x03F;
-    recordPayload[0] = zeroVal.byteValue();
-
-    System.arraycopy(languageBytes, 0, recordPayload, 1, languageBytes.length & 0x03F);
-    System.arraycopy(textBytes, 0, recordPayload,1 + (languageBytes.length & 0x03F), textBytes.length);
-
-    Log.i(TAG, BinaryUtils.ByteArrayToHexString(recordPayload));
-
-    return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, null, recordPayload);
-  }
-
-  public static NdefRecord createUrlRecord(String text) {
-    byte[] textBytes;
-
-    textBytes = text.getBytes(Charset.forName("UTF-8"));
-
-    byte[] recordPayload = new byte[1 + textBytes.length];
-
-    System.arraycopy(textBytes,0, recordPayload,1, textBytes.length);
-
-    Log.i(TAG, BinaryUtils.ByteArrayToHexString(recordPayload));
-
-    return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_URI, null, recordPayload);
+    throw new Exception("Unexpected NDEF type");
   }
 }

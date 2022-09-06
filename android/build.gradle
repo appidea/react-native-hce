@@ -29,7 +29,7 @@ android {
   compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
   buildToolsVersion getExtOrDefault('buildToolsVersion')
   defaultConfig {
-    minSdkVersion 16
+    minSdkVersion 21
     targetSdkVersion getExtOrIntegerDefault('targetSdkVersion')
     versionCode 1
     versionName "1.0"
@@ -124,7 +124,11 @@ repositories {
 def kotlin_version = getExtOrDefault('kotlinVersion')
 
 dependencies {
+  def lifecycle_version = "2.4.0"
+
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+  implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
 }
