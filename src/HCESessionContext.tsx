@@ -40,7 +40,7 @@ export const HCESessionContext = createContext<HCEReactContextValue>({
  * @group React
  * @constructor
  */
-export const HCESessionProvider: React.FC = () => {
+export const HCESessionProvider: React.FC = (props) => {
   const [session, setSession] = useState<HCESession>();
 
   useEffect(() => {
@@ -55,5 +55,5 @@ export const HCESessionProvider: React.FC = () => {
     return null;
   }
 
-  return <HCESessionContext.Provider value={{ session }} />;
+  return <HCESessionContext.Provider value={{ session }} {...props} />;
 };
