@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@react-native-picker/picker": "^2.4.4",
-    "react": "16.11.0",
-    "react-native": "0.67.1"
+    "react": "^17.0.2",
+    "react-native": "0.67.4"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
