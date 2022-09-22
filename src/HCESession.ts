@@ -47,7 +47,7 @@ export interface HCESessionEvents {
 /**
  * The HCESession listener. Parameter for {@link HCESession.on} method.
  */
-export type HCESessionEventListener = () => void;
+export type HCESessionEventListener = (eventData?: string) => void;
 
 /**
  * The HCESession listener cancellation method. Used as a return valu of {@link HCESession.on} method.
