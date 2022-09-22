@@ -18,4 +18,4 @@ export interface HCEApplication {
    * The content of application that can vary during the lifetime, e.g. internal files.
    */
   content: any;
-};
+}
