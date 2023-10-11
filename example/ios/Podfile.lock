@@ -272,7 +272,7 @@ PODS:
   - React-jsinspector (0.67.4)
   - React-logger (0.67.4):
     - glog
-  - react-native-hce (0.1.2):
+  - react-native-hce (0.2.0):
     - React
   - React-perflogger (0.67.4)
   - React-RCTActionSheet (0.67.4):
@@ -517,7 +517,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: cbdf37cebdc4f5d8b3d0bf5ccaa6147fd9de9f3d
   React-jsinspector: f4775ea9118cbe1f72b834f0f842baa7a99508d8
   React-logger: a1f028f6d8639a3f364ef80419e5e862e1115250
-  react-native-hce: 1dde97dbcc3ec4e56e59f878d83e2ebce8358906
+  react-native-hce: d416a1fcb8fd85e1d46260f72c29589a77869879
   React-perflogger: 0afaf2f01a47fd0fc368a93bfbb5bd3b26db6e7f
   React-RCTActionSheet: 59f35c4029e0b532fc42114241a06e170b7431a2
   React-RCTAnimation: aae4f4bed122e78bdab72f7118d291d70a932ce2
@@ -536,4 +536,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: b66db35ca1efc5c04f64f281a8ebfa6f0171a127
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.13.0
