@@ -40,7 +40,9 @@ export const HCESessionContext = createContext<HCEReactContextValue>({
  * @group React
  * @constructor
  */
-export const HCESessionProvider: React.FC = (props) => {
+export const HCESessionProvider: React.FC<{
+  children?: React.ReactNode;
+}> = (props) => {
   const [session, setSession] = useState<HCESession>();
 
   useEffect(() => {
