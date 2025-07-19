@@ -26,7 +26,7 @@ public class NFCTagType4 implements IHCEApplication {
   private final HceViewModel hceModel;
 
   private SelectedFile selectedFile = null;
-  public final byte[] ndefDataBuffer = new byte[0xFFFE];
+  public final byte[] ndefDataBuffer = new byte[0x1000];
   public final byte[] ccDataBuffer = new byte[15];
 
   private enum SelectedFile {
