@@ -21,13 +21,13 @@ public class NFCTagType4 implements IHCEApplication {
   private static final byte[] C_APDU_SELECT = BinaryUtils.HexStringToByteArray("00A4040007D276000085010100");
   private static final byte[] FILENAME_CC = BinaryUtils.HexStringToByteArray("E103");
   private static final byte[] FILENAME_NDEF = BinaryUtils.HexStringToByteArray("E104");
-  private static final byte[] CC_HEADER = BinaryUtils.HexStringToByteArray("001120010000FF");
+  private static final byte[] CC_HEADER = BinaryUtils.HexStringToByteArray("000F20010000FF");
   private final PrefManager prefManager;
   private final HceViewModel hceModel;
 
   private SelectedFile selectedFile = null;
-  public final byte[] ndefDataBuffer = new byte[0x1000];
-  public final byte[] ccDataBuffer = new byte[15];
+  public final byte[] ndefDataBuffer = new byte[0x7FFF];
+  public final byte[] ccDataBuffer = new byte[0x000F];
 
   private enum SelectedFile {
     FILENAME_CC,
@@ -49,7 +49,7 @@ public class NFCTagType4 implements IHCEApplication {
 
   private void setUpCapabilityContainerContent() {
     System.arraycopy(CC_HEADER, 0, this.ccDataBuffer, 0, CC_HEADER.length);
-    byte[] controlTlv = BinaryUtils.HexStringToByteArray("0406E104100000" + (prefManager.getWritable() ? "00":"FF"));
+    byte[] controlTlv = BinaryUtils.HexStringToByteArray("0406E1047FFF00" + (prefManager.getWritable() ? "00":"FF"));
     System.arraycopy(controlTlv, 0, this.ccDataBuffer, CC_HEADER.length, controlTlv.length);
   }
 
