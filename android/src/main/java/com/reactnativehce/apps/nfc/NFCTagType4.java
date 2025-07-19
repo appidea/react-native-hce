@@ -108,7 +108,7 @@ public class NFCTagType4 implements IHCEApplication {
     System.arraycopy(ApduHelper.R_APDU_OK, 0, response, realLength, ApduHelper.R_APDU_OK.length);
 
     this.hceModel.getLastState()
-            .setValue(HceViewModel.HCE_STATE_READ);
+      .setValue(HceViewModel.HCE_STATE_READ);
 
     return response;
   }
@@ -143,12 +143,12 @@ public class NFCTagType4 implements IHCEApplication {
       this.prefManager.setContent(nm.getContent());
       this.prefManager.setType(nm.getType());
       this.hceModel.getLastState()
-              .setValue(HceViewModel.HCE_STATE_WRITE_FULL);
+        .setValue(HceViewModel.HCE_STATE_WRITE_FULL);
       this.hceModel.getLastState()
-              .setValue(HceViewModel.HCE_STATE_UPDATE_APPLICATION);
+        .setValue(HceViewModel.HCE_STATE_UPDATE_APPLICATION);
     } else {
       this.hceModel.getLastState()
-              .setValue(HceViewModel.HCE_STATE_WRITE_PARTIAL);
+        .setValue(HceViewModel.HCE_STATE_WRITE_PARTIAL);
     }
 
     return ApduHelper.R_APDU_OK;
@@ -175,6 +175,6 @@ public class NFCTagType4 implements IHCEApplication {
   @Override
   public void onDestroy(int reason) {
     this.hceModel.getLastState()
-            .setValue(HceViewModel.HCE_STATE_DISCONNECTED);
+      .setValue(HceViewModel.HCE_STATE_DISCONNECTED);
   }
 }
