@@ -21,7 +21,7 @@ public class NFCTagType4 implements IHCEApplication {
   private static final byte[] C_APDU_SELECT = BinaryUtils.HexStringToByteArray("00A4040007D276000085010100");
   private static final byte[] FILENAME_CC = BinaryUtils.HexStringToByteArray("E103");
   private static final byte[] FILENAME_NDEF = BinaryUtils.HexStringToByteArray("E104");
-  private static final byte[] CC_HEADER = BinaryUtils.HexStringToByteArray("001120FFFFFFFF");
+  private static final byte[] CC_HEADER = BinaryUtils.HexStringToByteArray("001120010000FF");
   private final PrefManager prefManager;
   private final HceViewModel hceModel;
 
@@ -49,7 +49,7 @@ public class NFCTagType4 implements IHCEApplication {
 
   private void setUpCapabilityContainerContent() {
     System.arraycopy(CC_HEADER, 0, this.ccDataBuffer, 0, CC_HEADER.length);
-    byte[] controlTlv = BinaryUtils.HexStringToByteArray("0406E104FFFE00" + (prefManager.getWritable() ? "00":"FF"));
+    byte[] controlTlv = BinaryUtils.HexStringToByteArray("0406E104100000" + (prefManager.getWritable() ? "00":"FF"));
     System.arraycopy(controlTlv, 0, this.ccDataBuffer, CC_HEADER.length, controlTlv.length);
   }
 
@@ -108,7 +108,7 @@ public class NFCTagType4 implements IHCEApplication {
     System.arraycopy(ApduHelper.R_APDU_OK, 0, response, realLength, ApduHelper.R_APDU_OK.length);
 
     this.hceModel.getLastState()
-      .setValue(HceViewModel.HCE_STATE_READ);
+            .setValue(HceViewModel.HCE_STATE_READ);
 
     return response;
   }
@@ -143,12 +143,12 @@ public class NFCTagType4 implements IHCEApplication {
       this.prefManager.setContent(nm.getContent());
       this.prefManager.setType(nm.getType());
       this.hceModel.getLastState()
-        .setValue(HceViewModel.HCE_STATE_WRITE_FULL);
+              .setValue(HceViewModel.HCE_STATE_WRITE_FULL);
       this.hceModel.getLastState()
-        .setValue(HceViewModel.HCE_STATE_UPDATE_APPLICATION);
+              .setValue(HceViewModel.HCE_STATE_UPDATE_APPLICATION);
     } else {
       this.hceModel.getLastState()
-        .setValue(HceViewModel.HCE_STATE_WRITE_PARTIAL);
+              .setValue(HceViewModel.HCE_STATE_WRITE_PARTIAL);
     }
 
     return ApduHelper.R_APDU_OK;
@@ -175,6 +175,6 @@ public class NFCTagType4 implements IHCEApplication {
   @Override
   public void onDestroy(int reason) {
     this.hceModel.getLastState()
-      .setValue(HceViewModel.HCE_STATE_DISCONNECTED);
+            .setValue(HceViewModel.HCE_STATE_DISCONNECTED);
   }
 }
