@@ -1,32 +1,18 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "react-native-hce": ["./src/index"]
-    },
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
+    "lib": ["ES2018", "ES2018.AsyncIterable"],
+    "target": "ES2018",
+    "noImplicitAny": true,
+    "declaration": true,
+    "baseUrl": "./src",
     "esModuleInterop": true,
-    "importsNotUsedAsValues": "error",
-    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "moduleResolution": "Node",
     "jsx": "react",
-    "lib": ["esnext"],
-    "module": "esnext",
-    "moduleResolution": "node",
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noImplicitUseStrict": false,
-    "noStrictGenericChecks": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "strict": true,
-    "target": "esnext"
+    "emitDeclarationOnly": true
   },
-  "typedocOptions": {
-    "entryPoints": ["src/index.ts"],
-    "out": "docs",
-    "excludeInternal": true
-  }
+  "exclude": ["node_modules", "dist", "example"]
 }

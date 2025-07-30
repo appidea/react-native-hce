@@ -1,7 +1,7 @@
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('path');
-const blacklist = require('metro-config/src/defaults/exclusionList');
-const escape = require('escape-string-regexp');
 const pak = require('../package.json');
+const blacklist = require('metro-config/src/defaults/exclusionList');
 
 const root = path.resolve(__dirname, '..');
 
@@ -9,12 +9,21 @@ const modules = Object.keys({
   ...pak.peerDependencies,
 });
 
-module.exports = {
-  projectRoot: __dirname,
-  watchFolders: [root],
+const extraNodeModules = {
+  ...modules.reduce((acc, name) => {
+    acc[name] = path.join(__dirname, 'node_modules', name);
+    return acc;
+  }, {}),
+  'react-native-hce': path.join(__dirname, '..'),
+};
 
-  // We need to make sure that only one version is loaded for peerDependencies
-  // So we blacklist them at the root, and alias them to the versions in example's node_modules
+/**
+ * Metro configuration
+ * https://reactnative.dev/docs/metro
+ *
+ * @type {import('metro-config').MetroConfig}
+ */
+const config = {
   resolver: {
     blacklistRE: blacklist(
       modules.map(
@@ -23,13 +32,12 @@ module.exports = {
       )
     ),
 
-    extraNodeModules: modules.reduce((acc, name) => {
-      acc[name] = path.join(__dirname, 'node_modules', name);
-      return acc;
-    }, {}),
+    extraNodeModules,
   },
-
   transformer: {
+    babelTransformerPath: require.resolve(
+      '@react-native/metro-babel-transformer'
+    ),
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: false,
@@ -37,4 +45,11 @@ module.exports = {
       },
     }),
   },
+  watchFolders: [
+    path.resolve(__dirname, '..'),
+    path.resolve(__dirname, '../node_modules'), // sometimes needed
+  ],
+  projectRoot: path.resolve('.'),
 };
+
+module.exports = mergeConfig(getDefaultConfig(__dirname), config);
