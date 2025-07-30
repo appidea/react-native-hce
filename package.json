@@ -1,6 +1,6 @@
 {
   "name": "react-native-hce",
-  "version": "0.1.24",
+  "version": "0.3.0",
   "description": "React Native HCE",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
