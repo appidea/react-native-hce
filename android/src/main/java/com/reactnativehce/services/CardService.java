@@ -27,10 +27,6 @@ public class CardService extends HostApduService {
 
     @Override
     public byte[] processCommandApdu(byte[] command, Bundle extras) {
-      if (currentHCEApplication != null) {
-        return currentHCEApplication.processCommand(command);
-      }
-
       if (ApduHelper.commandByRangeEquals(command, 0, 4, ApduHelper.C_APDU_SELECT_APP)) {
         for (IHCEApplication app : registeredHCEApplications) {
           if (app.assertSelectCommand(command)) {
@@ -38,6 +34,8 @@ public class CardService extends HostApduService {
             return ApduHelper.R_APDU_OK;
           }
         }
+      } else if (currentHCEApplication != null) {
+        return currentHCEApplication.processCommand(command);
       }
 
       return ApduHelper.R_APDU_ERROR;
